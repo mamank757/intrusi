@@ -374,6 +374,121 @@
     font-size: 12.5px;
   }
   footer .foot-line{ border-top: 1px solid var(--line); padding-top: 16px; margin-top: 6px; }
+
+  /* ---------- value + status pill stack (used in tables) ---------- */
+  .val-wrap{
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 3px;
+  }
+
+  /* ---------- tap-to-open info bubble (mobile-friendly replacement for title tooltip) ---------- */
+  .info-dot{ position: relative; }
+  #info-bubble{
+    display: none;
+    position: fixed;
+    z-index: 50;
+    max-width: 260px;
+    background: var(--river-deep);
+    color: #eaf4f2;
+    font-size: 12.5px;
+    line-height: 1.45;
+    font-family: var(--sans);
+    padding: 10px 12px;
+    border-radius: var(--radius);
+    box-shadow: 0 8px 22px rgba(0,0,0,0.22);
+  }
+  #info-bubble.open{ display: block; }
+  #info-bubble::after{
+    content: "";
+    position: absolute;
+    top: -5px;
+    left: var(--arrow-x, 14px);
+    width: 9px; height: 9px;
+    background: var(--river-deep);
+    transform: rotate(45deg);
+  }
+
+  /* ---------- sticky first column while a table is still a real <table> (tablet & desktop) ---------- */
+  @media (min-width: 641px){
+    .table-scroll table th:first-child,
+    .table-scroll table td:first-child{
+      position: sticky;
+      left: 0;
+      background: var(--paper);
+    }
+  }
+
+  /* =====================================================================
+     MOBILE (≤ 640px): tighter spacing, tables become stacked cards,
+     inputs sized to avoid iOS auto-zoom, touch-friendlier controls.
+     ===================================================================== */
+  @media (max-width: 640px){
+    header.hero{ padding: 26px 16px 0; }
+    .hero-inner{ padding-bottom: 20px; }
+    .hero-eyebrow{ font-size: 11.5px; }
+    .hero-desc{ font-size: 14px; margin-bottom: 16px; }
+    .hero-formula{ font-size: 11.5px; padding: 8px 10px; }
+
+    main{ padding: 18px 12px 56px; }
+    .layout{ gap: 14px; }
+    .panel + .panel{ margin-top: 14px; }
+    .panel-head{ padding: 13px 14px 10px; }
+    .panel-body{ padding: 13px 14px 16px; }
+
+    .stat{ padding: 13px 12px 11px; }
+    .stat-value{ font-size: 19px; }
+
+    /* inputs: 16px font stops iOS Safari from zooming in on focus */
+    input[type="number"]{
+      font-size: 16px;
+      padding: 7px 8px;
+      width: 62px;
+    }
+    input[type="range"]{
+      height: 28px; /* larger touch target, track stays thin via accent */
+    }
+
+    .point-check{ row-gap: 10px; }
+    .point-check input[type="number"]{ width: 58px; }
+
+    .threshold-list li{ flex-wrap: wrap; }
+    .threshold-list .desc{ flex-basis: 100%; margin-top: 2px; }
+
+    /* ---- tables become stacked cards, no horizontal scrolling ---- */
+    .rtable thead{ display: none; }
+    .rtable, .rtable tbody, .rtable tr, .rtable td{ display: block; width: 100%; }
+    .rtable{ border: none; }
+    .rtable tr{
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      padding: 10px 12px 2px;
+      margin-bottom: 10px;
+    }
+    .rtable tr:last-child{ margin-bottom: 0; }
+    .rtable td{
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 8px 0;
+      white-space: normal;
+    }
+    .rtable td:first-child{
+      font-weight: 600;
+      font-size: 14.5px;
+      color: var(--river-deep);
+      padding-top: 0;
+    }
+    .rtable td:not(:first-child)::before{
+      content: attr(data-label);
+      color: var(--ink-soft);
+      font-size: 12px;
+      font-family: var(--sans);
+      padding-right: 10px;
+    }
+  }
 </style>
 </head>
 <body>
@@ -407,7 +522,7 @@
         <div class="field primary" id="field-t">
           <div class="field-top">
             <span class="field-label">Durasi tanpa hujan saat ini <span class="sym">t</span>
-              <span class="info-dot" title="Variabel utama: mengontrol seluruh hasil simulasi di bawah.">i</span>
+              <span class="info-dot" role="button" tabindex="0" data-note="Variabel utama: mengontrol seluruh hasil simulasi di bawah.">i</span>
             </span>
             <span class="field-value"><span id="val-t">100</span> hari</span>
           </div>
@@ -423,7 +538,7 @@
           <div class="field" id="field-S0">
             <div class="field-top">
               <span class="field-label">Salinitas di mulut sungai <span class="sym">S₀</span>
-                <span class="info-dot" title="Asumsi: laut lepas Indonesia timur ~32–34 ppt, turun karena percampuran awal di mulut sungai.">i</span>
+                <span class="info-dot" role="button" tabindex="0" data-note="Asumsi: laut lepas Indonesia timur ~32–34 ppt, turun karena percampuran awal di mulut sungai.">i</span>
               </span>
               <span class="field-value"><span id="val-S0">30</span> ppt</span>
             </div>
@@ -436,7 +551,7 @@
           <div class="field" id="field-Qavg">
             <div class="field-top">
               <span class="field-label">Debit rata-rata tahunan <span class="sym">Qavg</span>
-                <span class="info-dot" title="Faktual: debit rata-rata Sungai Walanae, Stasiun Tampangeng (2000–2014).">i</span>
+                <span class="info-dot" role="button" tabindex="0" data-note="Faktual: debit rata-rata Sungai Walanae, Stasiun Tampangeng (2000–2014).">i</span>
               </span>
               <span class="field-value"><span id="val-Qavg">138</span> m³/s</span>
             </div>
@@ -449,7 +564,7 @@
           <div class="field" id="field-Qmin">
             <div class="field-top">
               <span class="field-label">Debit minimum tahunan <span class="sym">Qmin</span>
-                <span class="info-dot" title="Faktual: debit minimum tahunan Sungai Walanae, Stasiun Tampangeng (2000–2014). Harus lebih kecil dari Qavg.">i</span>
+                <span class="info-dot" role="button" tabindex="0" data-note="Faktual: debit minimum tahunan Sungai Walanae, Stasiun Tampangeng (2000–2014). Harus lebih kecil dari Qavg.">i</span>
               </span>
               <span class="field-value"><span id="val-Qmin">15.8</span> m³/s</span>
             </div>
@@ -462,7 +577,7 @@
           <div class="field" id="field-tkal">
             <div class="field-top">
               <span class="field-label">Durasi kemarau acuan <span class="sym">t_kal</span>
-                <span class="info-dot" title="Panjang musim kemarau khas (Sept–Nov) yang berkorespondensi dengan Qmin.">i</span>
+                <span class="info-dot" role="button" tabindex="0" data-note="Panjang musim kemarau khas (Sept–Nov) yang berkorespondensi dengan Qmin.">i</span>
               </span>
               <span class="field-value"><span id="val-tkal">90</span> hari</span>
             </div>
@@ -479,7 +594,7 @@
           <div class="field" id="field-w">
             <div class="field-top">
               <span class="field-label">Lebar penampang <span class="sym">w</span>
-                <span class="info-dot" title="Asumsi teknik — data cross-section publik tidak tersedia. Ganti jika ada data ukur lapangan.">i</span>
+                <span class="info-dot" role="button" tabindex="0" data-note="Asumsi teknik — data cross-section publik tidak tersedia. Ganti jika ada data ukur lapangan.">i</span>
               </span>
               <span class="field-value"><span id="val-w">80</span> m</span>
             </div>
@@ -492,7 +607,7 @@
           <div class="field" id="field-d">
             <div class="field-top">
               <span class="field-label">Kedalaman rata-rata <span class="sym">d</span>
-                <span class="info-dot" title="Nilai tengah dari rentang faktual kedalaman dekat muara Sungai Walanae (10–15 m).">i</span>
+                <span class="info-dot" role="button" tabindex="0" data-note="Nilai tengah dari rentang faktual kedalaman dekat muara Sungai Walanae (10–15 m).">i</span>
               </span>
               <span class="field-value"><span id="val-d">12</span> m</span>
             </div>
@@ -555,7 +670,7 @@
         <div class="panel-body" style="padding:0;">
           <div class="stat-grid">
             <div class="stat">
-              <div class="stat-label">Konstanta resesi <span class="info-dot" title="k = t_kal / ln(Qavg / Qmin) — dikalibrasi dari dua titik data debit real.">i</span></div>
+              <div class="stat-label">Konstanta resesi <span class="info-dot" role="button" tabindex="0" data-note="k = t_kal / ln(Qavg / Qmin) — dikalibrasi dari dua titik data debit real.">i</span></div>
               <div class="stat-value" id="stat-k">—<span class="u">hari</span></div>
             </div>
             <div class="stat">
@@ -606,7 +721,7 @@
         </div>
         <div class="panel-body">
           <div class="table-scroll">
-            <table id="rekap-table">
+            <table id="rekap-table" class="rtable">
               <thead>
                 <tr>
                   <th>Jarak dari muara</th>
@@ -642,7 +757,7 @@
         </div>
         <div class="panel-body">
           <div class="table-scroll">
-            <table id="compare-table">
+            <table id="compare-table" class="rtable">
               <thead>
                 <tr>
                   <th>t (hari)</th>
@@ -672,9 +787,63 @@
   </div>
 </footer>
 
+<div id="info-bubble" role="tooltip"></div>
+
 <script>
 (function(){
   "use strict";
+
+  // ---------- tap/click-to-open info bubble ----------
+  (function setupInfoBubble(){
+    var bubble = document.getElementById("info-bubble");
+    var openDot = null;
+
+    function close(){
+      bubble.classList.remove("open");
+      openDot = null;
+    }
+
+    function openFor(dot){
+      bubble.textContent = dot.getAttribute("data-note") || "";
+      bubble.classList.add("open");
+      openDot = dot;
+
+      var r = dot.getBoundingClientRect();
+      var bw = Math.min(260, window.innerWidth - 24);
+      bubble.style.maxWidth = bw + "px";
+      // measure after content/width set
+      var bh = bubble.offsetHeight;
+      var left = r.left + r.width/2 - bw/2;
+      left = Math.max(12, Math.min(left, window.innerWidth - bw - 12));
+      var top = r.bottom + 8;
+      if(top + bh > window.innerHeight - 8){ top = r.top - bh - 8; }
+      bubble.style.left = left + "px";
+      bubble.style.top = top + "px";
+      bubble.style.setProperty("--arrow-x", (r.left + r.width/2 - left - 4.5) + "px");
+    }
+
+    document.addEventListener("click", function(e){
+      var dot = e.target.closest(".info-dot");
+      if(dot){
+        if(openDot === dot){ close(); } else { openFor(dot); }
+        e.stopPropagation();
+        return;
+      }
+      if(!e.target.closest("#info-bubble")) close();
+    });
+
+    document.addEventListener("keydown", function(e){
+      if(e.key === "Escape"){ close(); return; }
+      if((e.key === "Enter" || e.key === " ") && document.activeElement && document.activeElement.classList.contains("info-dot")){
+        e.preventDefault();
+        var dot = document.activeElement;
+        if(openDot === dot){ close(); } else { openFor(dot); }
+      }
+    });
+
+    window.addEventListener("resize", close);
+    window.addEventListener("scroll", close, true);
+  })();
 
   var state = {
     S0: 30, Qavg: 138, Qmin: 15.8, tkal: 90, t: 100,
@@ -682,6 +851,19 @@
   };
   var defaults = Object.assign({}, state);
   var yScale = "linear";
+  var lastModel = null;
+
+  // redraw the chart at the correct pixel size whenever the viewport
+  // changes (rotation, resize, entering/leaving mobile width) — the SVG
+  // viewBox is sized to match real on-screen pixels so text never
+  // shrinks away on small phones.
+  var resizeTimer;
+  window.addEventListener("resize", function(){
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(function(){
+      if(lastModel) renderChart(lastModel);
+    }, 120);
+  });
 
   var ids = ["S0","Qavg","Qmin","tkal","t","w","d","D1","D2","D3"];
 
@@ -784,10 +966,24 @@
   var MAXKM = 30;
 
   function renderChart(m){
+    lastModel = m;
     var svg = document.getElementById("chart");
-    var W = 860, H = 380;
-    var padL = 54, padR = 18, padT = 16, padB = 36;
+
+    // Size the viewBox to the SVG's actual on-screen width, so 1 viewBox
+    // unit = 1 real pixel. This keeps axis labels a legible, constant
+    // size on any screen instead of shrinking proportionally on mobile.
+    var containerWidth = svg.clientWidth || (svg.parentElement && svg.parentElement.clientWidth) || 800;
+    var W = Math.max(Math.round(containerWidth), 260);
+    var small = W < 480;
+    var H = Math.round(W * (small ? 0.72 : 0.44));
+    var padL = small ? 40 : 54;
+    var padR = small ? 10 : 18;
+    var padT = 14;
+    var padB = small ? 28 : 36;
     var plotW = W - padL - padR, plotH = H - padT - padB;
+    var xTickStep = small ? 10 : 5;
+
+    svg.setAttribute("viewBox", "0 0 " + W + " " + H);
 
     var maxY = state.S0;
     var minYForLog = 0.01;
@@ -822,7 +1018,7 @@
     });
 
     // x ticks
-    for(var kmT=0; kmT<=MAXKM; kmT+=5){
+    for(var kmT=0; kmT<=MAXKM; kmT+=xTickStep){
       var px = xToPix(kmT);
       svgParts.push('<line x1="'+px+'" y1="'+padT+'" x2="'+px+'" y2="'+(H-padB)+'" stroke="#eef1ea" stroke-width="1"/>');
       svgParts.push('<text x="'+px+'" y="'+(H-padB+18)+'" text-anchor="middle" font-size="11" fill="#7c8a80" font-family="ui-monospace,monospace">'+kmT+'</text>');
@@ -876,13 +1072,17 @@
 
   // ---------- render: rekap table ----------
   var REKAP_KM = [10, 20, 30];
+  var REKAP_LABELS = ["Rendah", "Sedang", "Kuat"];
   function renderRekap(m){
     var body = document.getElementById("rekap-body");
     body.innerHTML = REKAP_KM.map(function(km){
-      var cells = m.kx.map(function(kxVal){
+      var cells = m.kx.map(function(kxVal, idx){
         var v = m.salAt(km, kxVal);
         var st = statusOf(v);
-        return '<td class="num">' + fmtSal(v) + ' ppt<br><span class="pill ' + st.cls + '">' + st.label + '</span></td>';
+        var label = REKAP_LABELS[idx] + ", D=" + m.Ds[idx];
+        return '<td class="num" data-label="' + label + '"><span class="val-wrap">' +
+          fmtSal(v) + ' ppt<span class="pill ' + st.cls + '">' + st.label + '</span>' +
+          '</span></td>';
       }).join("");
       return '<tr><td>' + km + ' km</td>' + cells + '</tr>';
     }).join("");
@@ -890,19 +1090,21 @@
 
   // ---------- render: comparison table ----------
   var COMPARE_T = [30, 60, 90, 120];
+  var COMPARE_DLABELS = ["D=100", "D=150", "D=300"];
   function renderCompare(m){
     var body = document.getElementById("compare-body");
+    COMPARE_DLABELS = m.Ds.map(function(D){ return "D=" + D; });
     body.innerHTML = COMPARE_T.map(function(t){
       var Qf = state.Qavg * Math.exp(-t / m.k);
       var uf = Qf / m.A;
       var kxs = m.Ds.map(function(D){ return uf / D; });
       var s10 = kxs.map(function(kxVal){ return state.S0 * Math.exp(-kxVal * 10000); });
       var s20 = kxs.map(function(kxVal){ return state.S0 * Math.exp(-kxVal * 20000); });
-      var row = '<tr><td>' + t + '</td>' +
-        '<td class="num">' + fmt(Qf,2) + '</td>' +
-        '<td class="num">' + fmt(uf,5) + '</td>' +
-        s10.map(function(v){ return '<td class="num">' + fmtSal(v) + '</td>'; }).join("") +
-        s20.map(function(v){ return '<td class="num">' + fmtSal(v) + '</td>'; }).join("") +
+      var row = '<tr><td>' + t + ' hari</td>' +
+        '<td class="num" data-label="Qf(t) m³/s">' + fmt(Qf,2) + '</td>' +
+        '<td class="num" data-label="uf(t) m/s">' + fmt(uf,5) + '</td>' +
+        s10.map(function(v, idx){ return '<td class="num" data-label="S@10km ' + COMPARE_DLABELS[idx] + '">' + fmtSal(v) + ' ppt</td>'; }).join("") +
+        s20.map(function(v, idx){ return '<td class="num" data-label="S@20km ' + COMPARE_DLABELS[idx] + '">' + fmtSal(v) + ' ppt</td>'; }).join("") +
         '</tr>';
       return row;
     }).join("");
