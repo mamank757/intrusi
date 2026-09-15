@@ -3,417 +3,158 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Simulasi Intrusi Salinitas — Sungai Walanae</title>
+<title>Sistem Deteksi Salinitas & Peringatan Banjir — Walanae</title>
 <style>
   :root{
-    --bg: #eef2ec;
-    --paper: #fbfcf9;
-    --ink: #17262a;
-    --ink-soft: #52605f;
-    --line: #d7ddd1;
-    --river-deep: #163f4a;
-    --river: #1f5c6b;
-    --river-light: #4d92a0;
-    --paddy: #4c7a3d;
-    --paddy-bg: #e7f0e0;
-    --amber: #b4801f;
-    --amber-bg: #f6ecd6;
-    --clay: #a8431e;
-    --clay-bg: #f5e2d7;
-    --radius: 3px;
-    --serif: Georgia, "Iowan Old Style", "Palatino Linotype", "Times New Roman", serif;
-    --sans: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    --mono: ui-monospace, "SF Mono", "Cascadia Mono", Consolas, "Liberation Mono", monospace;
+    --bg: #eef2ec; --paper: #fbfcf9; --ink: #17262a; --ink-soft: #52605f; --line: #d7ddd1;
+    --river-deep: #163f4a; --river: #1f5c6b; --river-light: #4d92a0;
+    --paddy: #4c7a3d; --paddy-bg: #e7f0e0; 
+    --amber: #b4801f; --amber-bg: #f6ecd6; 
+    --clay: #a8431e; --clay-bg: #f5e2d7;
+    --flood: #0284c7; --flood-bg: #e0f2fe;
+    --radius: 4px; --serif: Georgia, serif; --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; --mono: ui-monospace, monospace;
   }
   *{ box-sizing: border-box; }
-  html, body{ margin:0; padding:0; }
-  body{
-    background: var(--bg);
-    color: var(--ink);
-    font-family: var(--sans);
-    font-size: 15px;
-    line-height: 1.5;
-  }
-  a{ color: var(--river); }
+  html, body{ margin:0; padding:0; background: var(--bg); color: var(--ink); font-family: var(--sans); font-size: 15px; line-height: 1.5; }
+  
+  header.hero{ background: linear-gradient(180deg, var(--river-deep), var(--river)); color: #eef4f2; padding: 32px 16px 0; position: relative; overflow: hidden; }
+  .hero-inner{ max-width: 1120px; margin: 0 auto; padding-bottom: 24px; position: relative; z-index: 2; }
+  .hero-eyebrow{ font-family: var(--mono); font-size: 11.5px; letter-spacing: 0.03em; color: #b9d6d3; margin: 0 0 8px; text-transform: uppercase; }
+  h1{ font-family: var(--serif); font-weight: 400; font-size: clamp(24px, 4vw, 38px); line-height: 1.15; margin: 0 0 10px; }
+  .hero-desc{ max-width: 620px; color: #dbe9e6; font-size: 14px; margin: 0; }
+  .river-wave{ position: absolute; left: 0; right: 0; bottom: -1px; width: 100%; height: 36px; display: block; }
 
-  /* ---------- Header ---------- */
-  header.hero{
-    background: linear-gradient(180deg, var(--river-deep), var(--river));
-    color: #eef4f2;
-    padding: 40px 24px 0;
-    position: relative;
-    overflow: hidden;
-  }
-  .hero-inner{
-    max-width: 1120px;
-    margin: 0 auto;
-    padding-bottom: 30px;
-    position: relative;
-    z-index: 2;
-  }
-  .hero-eyebrow{
-    font-family: var(--mono);
-    font-size: 12.5px;
-    letter-spacing: 0.02em;
-    color: #b9d6d3;
-    margin: 0 0 10px;
-  }
-  h1{
-    font-family: var(--serif);
-    font-weight: 400;
-    font-size: clamp(28px, 4.2vw, 42px);
-    line-height: 1.15;
-    margin: 0 0 14px;
-    max-width: 780px;
-  }
-  .hero-desc{
-    max-width: 620px;
-    color: #dbe9e6;
-    font-size: 15.5px;
-    margin: 0 0 22px;
-  }
-  .hero-formula{
-    display: inline-block;
-    font-family: var(--mono);
-    font-size: 13px;
-    background: rgba(255,255,255,0.08);
-    border: 1px solid rgba(255,255,255,0.18);
-    border-radius: var(--radius);
-    padding: 10px 14px;
-    color: #eaf4f2;
-  }
-  .hero-formula div + div{ margin-top: 4px; color: #b9d6d3; }
-  .river-wave{
-    position: absolute;
-    left: 0; right: 0; bottom: -1px;
-    width: 100%; height: 46px;
-    display: block;
-  }
+  main{ max-width: 1120px; margin: 0 auto; padding: 20px 14px 60px; }
+  .layout{ display: grid; grid-template-columns: 320px 1fr; gap: 16px; align-items: start; }
+  @media (max-width: 860px){ .layout{ grid-template-columns: 1fr; } }
 
-  /* ---------- Layout ---------- */
-  main{
-    max-width: 1120px;
-    margin: 0 auto;
-    padding: 28px 24px 80px;
-  }
-  .layout{
-    display: grid;
-    grid-template-columns: 320px 1fr;
-    gap: 22px;
-    align-items: start;
-  }
-  @media (max-width: 860px){
-    .layout{ grid-template-columns: 1fr; }
-  }
+  .panel{ background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: 0 1px 3px rgba(0,0,0,0.02); }
+  .panel + .panel{ margin-top: 16px; }
+  .panel-head{ padding: 14px 16px 10px; border-bottom: 1px solid var(--line); }
+  .panel-head h2{ font-family: var(--serif); font-weight: 400; font-size: 18px; margin: 0; color: var(--river-deep); }
+  .panel-body{ padding: 14px 16px 16px; }
 
-  .panel{
-    background: var(--paper);
-    border: 1px solid var(--line);
-    border-radius: var(--radius);
-    transition: all 0.3s ease;
-  }
-  .panel + .panel{ margin-top: 22px; }
+  .field{ margin-bottom: 12px; }
+  .field-top{ display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
+  .field-label{ font-size: 13px; color: var(--ink); }
+  .field-value{ font-family: var(--mono); font-size: 13px; color: var(--river-deep); }
+  .field-row{ display: flex; align-items: center; gap: 8px; }
+  input[type="range"]{ flex: 1; accent-color: var(--river); height: 6px; }
+  input[type="number"]{ width: 68px; font-family: var(--mono); font-size: 14px; border: 1px solid var(--line); border-radius: var(--radius); padding: 6px 8px; background: #fff; }
+  .field.primary{ background: var(--amber-bg); border: 1px solid #e0c284; border-radius: var(--radius); padding: 10px 12px 12px; margin: -2px 0 14px; }
 
-  .panel-head{
-    padding: 16px 18px 12px;
-    border-bottom: 1px solid var(--line);
-  }
-  .panel-head h2{
-    font-family: var(--serif);
-    font-weight: 400;
-    font-size: 19px;
-    margin: 0 0 3px;
-    color: var(--river-deep);
-  }
-  .panel-head p{
-    margin: 0;
-    font-size: 13px;
-    color: var(--ink-soft);
-  }
-  .panel-body{ padding: 16px 18px 20px; }
+  .btn-sync { width: 100%; padding: 12px; background: #e7f0e0; border: 1px solid #4c7a3d; border-radius: var(--radius); font-size: 14px; font-weight: 600; cursor: pointer; color: #4c7a3d; margin-bottom: 14px; text-align: center; }
+  .btn-sync:disabled { opacity: 0.6; cursor: wait; }
 
-  /* ---------- Controls ---------- */
-  .controls-group{ margin-bottom: 20px; }
-  .controls-group:last-child{ margin-bottom: 0; }
-  .controls-group h3{
-    font-size: 11.5px;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--ink-soft);
-    font-weight: 600;
-    margin: 0 0 10px;
-    padding-bottom: 6px;
-    border-bottom: 1px solid var(--line);
-  }
-  .field{ margin-bottom: 14px; }
-  .field:last-child{ margin-bottom: 0; }
-  .field-top{
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 8px;
-    margin-bottom: 5px;
-  }
-  .field-label{
-    font-size: 13.5px;
-    color: var(--ink);
-    display: flex;
-    align-items: center;
-    gap: 5px;
-  }
-  .field-label .sym{
-    font-family: var(--serif);
-    font-style: italic;
-    color: var(--ink-soft);
-  }
-  .field-value{
-    font-family: var(--mono);
-    font-size: 13.5px;
-    color: var(--river-deep);
-    white-space: nowrap;
-  }
-  .field-row{ display: flex; align-items: center; gap: 10px; }
-  input[type="range"]{ flex: 1; accent-color: var(--river); height: 4px; }
-  input[type="number"]{
-    width: 72px; font-family: var(--mono); font-size: 13px;
-    border: 1px solid var(--line); border-radius: var(--radius);
-    padding: 4px 6px; color: var(--ink); background: #fff;
-  }
-
-  .field.primary{
-    background: var(--amber-bg);
-    border: 1px solid #e0c284;
-    border-radius: var(--radius);
-    padding: 12px 12px 14px;
-    margin: -2px 0 16px;
-  }
-  .field.primary .field-label{ font-weight: 600; }
-
-  /* Tombol Tulisan Saja */
-  .btn-group {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin-bottom: 16px;
-  }
-  .action-btn{
-    width: 100%;
-    padding: 10px 12px;
-    background: #fff;
-    border: 1px solid var(--line);
-    border-radius: var(--radius);
-    font-size: 13px;
-    font-family: var(--sans);
-    font-weight: 600;
-    cursor: pointer;
-    text-align: center;
-    transition: all 0.2s;
-  }
-  .btn-sync { background: #e7f0e0; border-color: #4c7a3d; color: #4c7a3d; }
-  .btn-reset { margin-top: 18px; color: var(--ink-soft); }
-  .action-btn:disabled { opacity: 0.6; cursor: wait; }
-
-  /* ---------- Warning Banner ---------- */
-  #status-panel { display: none; }
+  /* Banners Status */
+  .status-panel { display: none; margin-bottom: 16px; border-width: 1.5px; }
   .status-darurat { background: var(--clay-bg); border-color: var(--clay); color: var(--clay); }
   .status-waspada { background: var(--amber-bg); border-color: var(--amber); color: #825b12; }
   .status-aman { background: var(--paddy-bg); border-color: var(--paddy); color: var(--paddy); }
-  .status-title { font-family: var(--sans); font-size: 16px; font-weight: 600; margin: 0 0 4px; text-transform: uppercase; }
-  .status-time { display: block; font-size: 12px; font-family: var(--mono); margin-top: 8px; opacity: 0.8; }
+  .status-banjir-awas { background: var(--flood-bg); border-color: var(--flood); color: #0369a1; }
+  
+  .status-title { font-family: var(--sans); font-size: 14.5px; font-weight: 700; margin: 0 0 6px; text-transform: uppercase; letter-spacing: 0.02em; }
+  .status-text { margin: 0; font-size: 13.5px; line-height: 1.5; }
+  .status-time { display: block; font-size: 11.5px; font-family: var(--mono); margin-top: 6px; opacity: 0.85; }
 
-  /* ---------- Stat readout ---------- */
-  .stat-grid{
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden;
-  }
-  @media (max-width: 640px){ .stat-grid{ grid-template-columns: repeat(2, 1fr); } }
-  .stat{ background: var(--paper); padding: 16px 16px 14px; }
-  .stat-label{ font-size: 12px; color: var(--ink-soft); margin-bottom: 6px; display: flex; align-items: center; gap: 5px; }
-  .stat-value{ font-family: var(--mono); font-size: 22px; color: var(--river-deep); line-height: 1.1; }
-  .stat-value .u{ font-size: 13px; color: var(--ink-soft); margin-left: 3px; }
+  /* Grid Hujan Hulu */
+  .hujan-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+  .hujan-box { background: rgba(255,255,255,0.7); border: 1px solid rgba(0,0,0,0.06); padding: 8px; border-radius: var(--radius); text-align: center; }
+  .hujan-box span { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 2px; color: var(--ink-soft); }
+  .hujan-box strong { font-family: var(--mono); font-size: 16px; color: var(--flood); }
 
-  /* ---------- Chart & Tables ---------- */
-  .chart-toolbar{ display: flex; align-items: center; justify-content: flex-end; gap: 14px; margin-bottom: 8px; font-size: 12.5px; color: var(--ink-soft); }
-  .seg{ display: inline-flex; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
-  .seg button{ border: none; background: #fff; padding: 5px 10px; font-size: 12.5px; cursor: pointer; color: var(--ink-soft); }
-  .seg button.active{ background: var(--river); color: #fff; }
-  .legend-row{ display: flex; flex-wrap: wrap; gap: 16px; margin-top: 10px; font-size: 12.5px; color: var(--ink-soft); }
-  .legend-row span{ display: inline-flex; align-items: center; gap: 6px; }
-  .swatch{ width: 14px; height: 3px; border-radius: 2px; display: inline-block; }
-  .swatch.dash{ background: repeating-linear-gradient(90deg, #97a394 0 4px, transparent 4px 7px); }
-  .point-check{ display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 16px; padding: 12px 14px; background: #f4f6f0; border: 1px solid var(--line); border-radius: var(--radius); font-size: 13.5px; }
-  .point-check input[type="number"]{ width: 64px; }
-  .pc-results{ display: flex; gap: 10px; flex-wrap: wrap; }
-  .pc-chip{ font-family: var(--mono); font-size: 12.5px; padding: 3px 8px; border-radius: 20px; white-space: nowrap; }
-  table{ width: 100%; border-collapse: collapse; font-size: 13.5px; }
-  th, td{ text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
-  th{ font-weight: 600; color: var(--ink-soft); font-size: 12.5px; }
-  td.num, th.num{ font-family: var(--mono); text-align: right; }
-  .table-scroll{ overflow-x: auto; }
-  .pill{ display: inline-block; padding: 2px 9px; border-radius: 20px; font-size: 12px; font-family: var(--sans); }
+  /* Responsive Table Layout untuk HP */
+  .table-scroll{ width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  table{ width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td{ text-align: left; padding: 10px 8px; border-bottom: 1px solid var(--line); }
+  th{ font-weight: 600; color: var(--ink-soft); background: #f4f6f0; }
+  td.num, th.num{ text-align: right; font-family: var(--mono); }
+  
+  .pill{ display: inline-block; padding: 3px 8px; border-radius: 20px; font-size: 11.5px; font-weight: 500; white-space: nowrap; }
   .pill.aman{ background: var(--paddy-bg); color: var(--paddy); }
   .pill.turun{ background: var(--amber-bg); color: var(--amber); }
   .pill.gagal{ background: var(--clay-bg); color: var(--clay); }
-  .val-wrap{ display: inline-flex; flex-direction: column; align-items: flex-end; gap: 3px; }
-  
-  footer{ max-width: 1120px; margin: 0 auto; padding: 0 24px 50px; color: var(--ink-soft); font-size: 12.5px; }
-  footer .foot-line{ border-top: 1px solid var(--line); padding-top: 16px; margin-top: 6px; }
+
+  /* Penyesuaian khusus layar HP kecil */
+  @media (max-width: 480px){
+    header.hero{ padding: 24px 12px 0; }
+    main{ padding: 12px 10px 40px; }
+    .panel-head{ padding: 12px 14px 8px; }
+    .panel-body{ padding: 12px 14px 14px; }
+    input[type="number"]{ width: 62px; font-size: 16px; } /* Mencegah zoom otomatis di iOS */
+  }
 </style>
 </head>
 <body>
 
 <header class="hero">
   <div class="hero-inner">
-    <p class="hero-eyebrow">Sistem Peringatan Dini Salinitas Air Irigasi Padi</p>
-    <h1>Simulasi Intrusi Salinitas, Sungai Walanae</h1>
-    <p class="hero-desc">Memperkirakan seberapa jauh baji garam naik ke hulu sungai saat musim kemarau dan menentukan status operasi pompa untuk lahan sawah terhubung.</p>
+    <p class="hero-eyebrow">Mitigasi Iklim Ekstrem Persawahan</p>
+    <h1>Deteksi Salinitas & Banjir</h1>
+    <p class="hero-desc">Sistem pemantauan baji garam estuari Walanae dan potensi banjir kiriman hulu untuk kelompok tani.</p>
   </div>
-  <svg class="river-wave" viewBox="0 0 1200 46" preserveAspectRatio="none">
-    <path d="M0,22 C150,42 300,2 450,20 C600,38 750,4 900,22 C1050,40 1150,10 1200,20 L1200,46 L0,46 Z" fill="#eef2ec"></path>
-  </svg>
+  <svg class="river-wave" viewBox="0 0 1200 36" preserveAspectRatio="none"><path d="M0,18 C150,34 300,2 450,16 C600,30 750,4 900,18 C1050,32 1150,8 1200,16 L1200,36 L0,36 Z" fill="#eef2ec"></path></svg>
 </header>
 
 <main>
   <div class="layout">
-
-    <!-- KIRI: CONTROLS -->
-    <div class="panel" id="controls-panel">
-      <div class="panel-head">
-        <h2>Parameter Kendali</h2>
-        <p>Sesuaikan angka atau sinkronkan data lapangan.</p>
-      </div>
+    <!-- PANEL KIRI: KENDALI -->
+    <div class="panel">
+      <div class="panel-head"><h2>Parameter Kendali</h2></div>
       <div class="panel-body">
-
-        <!-- Tombol Sinkronisasi Server GAS (Hanya Tulisan) -->
-        <div class="btn-group">
-          <button id="btn-sync" class="action-btn btn-sync">Sinkronisasi Data Server Terkini</button>
-        </div>
+        
+        <button id="btn-sync" class="btn-sync">Sinkronisasi Data Satelit Terkini</button>
 
         <div class="field primary" id="field-t">
-          <div class="field-top">
-            <span class="field-label">Durasi tanpa hujan saat ini <span class="sym">t</span></span>
-            <span class="field-value"><span id="val-t">60</span> hari</span>
-          </div>
-          <div class="field-row">
-            <input type="range" id="in-t" min="0" max="200" step="1" value="60">
-            <input type="number" id="num-t" min="0" max="365" step="1" value="60">
-          </div>
+          <div class="field-top"><span class="field-label">Durasi Tanpa Hujan <span class="sym">t</span></span><span class="field-value"><span id="val-t">60</span> hr</span></div>
+          <div class="field-row"><input type="range" id="in-t" min="0" max="200" step="1" value="60"><input type="number" id="num-t" value="60"></div>
         </div>
 
-        <div class="controls-group">
-          <h3>Parameter dasar</h3>
-          <div class="field">
-            <div class="field-top"><span class="field-label">Salinitas mulut sungai <span class="sym">S₀</span></span><span class="field-value"><span id="val-S0">30</span> ppt</span></div>
-            <div class="field-row"><input type="range" id="in-S0" min="10" max="40" step="0.5" value="30"><input type="number" id="num-S0" min="0" max="40" step="0.5" value="30"></div>
-          </div>
-          <div class="field">
-            <div class="field-top"><span class="field-label">Debit rata-rata <span class="sym">Qavg</span></span><span class="field-value"><span id="val-Qavg">138</span> m³/s</span></div>
-            <div class="field-row"><input type="range" id="in-Qavg" min="50" max="300" step="1" value="138"><input type="number" id="num-Qavg" min="1" max="1000" step="1" value="138"></div>
-          </div>
-          <div class="field">
-            <div class="field-top"><span class="field-label">Debit minimum <span class="sym">Qmin</span></span><span class="field-value"><span id="val-Qmin">15.8</span> m³/s</span></div>
-            <div class="field-row"><input type="range" id="in-Qmin" min="1" max="50" step="0.1" value="15.8"><input type="number" id="num-Qmin" min="0.1" max="500" step="0.1" value="15.8"></div>
-          </div>
-          <div class="field">
-            <div class="field-top"><span class="field-label">Kemarau acuan <span class="sym">t_kal</span></span><span class="field-value"><span id="val-tkal">90</span> hari</span></div>
-            <div class="field-row"><input type="range" id="in-tkal" min="30" max="180" step="1" value="90"><input type="number" id="num-tkal" min="1" max="365" step="1" value="90"></div>
-          </div>
+        <div class="field">
+          <div class="field-top"><span class="field-label">Salinitas S₀</span><span class="field-value"><span id="val-S0">30</span> ppt</span></div>
+          <div class="field-row"><input type="range" id="in-S0" min="10" max="40" step="0.5" value="30"><input type="number" id="num-S0" value="30"></div>
         </div>
-
-        <div class="controls-group">
-          <h3>Geometri penampang</h3>
-          <div class="field">
-            <div class="field-top"><span class="field-label">Lebar <span class="sym">w</span></span><span class="field-value"><span id="val-w">80</span> m</span></div>
-            <div class="field-row"><input type="range" id="in-w" min="20" max="250" step="1" value="80"><input type="number" id="num-w" min="1" max="1000" step="1" value="80"></div>
-          </div>
-          <div class="field">
-            <div class="field-top"><span class="field-label">Kedalaman <span class="sym">d</span></span><span class="field-value"><span id="val-d">12</span> m</span></div>
-            <div class="field-row"><input type="range" id="in-d" min="2" max="30" step="0.5" value="12"><input type="number" id="num-d" min="0.5" max="100" step="0.5" value="12"></div>
-          </div>
+        <div class="field">
+          <div class="field-top"><span class="field-label">Debit Qavg</span><span class="field-value"><span id="val-Qavg">138</span> m³/s</span></div>
+          <div class="field-row"><input type="range" id="in-Qavg" min="50" max="300" value="138"><input type="number" id="num-Qavg" value="138"></div>
         </div>
-
-        <div class="controls-group">
-          <h3>Koefisien Dispersi (D)</h3>
-          <div class="field">
-            <div class="field-top"><span class="field-label">Dispersi rendah <span class="sym">D₁</span></span><span class="field-value"><span id="val-D1">100</span> m²/s</span></div>
-            <div class="field-row"><input type="range" id="in-D1" min="20" max="500" step="5" value="100"><input type="number" id="num-D1" min="1" max="2000" step="5" value="100"></div>
-          </div>
-          <div class="field">
-            <div class="field-top"><span class="field-label">Dispersi sedang <span class="sym">D₂</span></span><span class="field-value"><span id="val-D2">150</span> m²/s</span></div>
-            <div class="field-row"><input type="range" id="in-D2" min="20" max="500" step="5" value="150"><input type="number" id="num-D2" min="1" max="2000" step="5" value="150"></div>
-          </div>
-          <div class="field">
-            <div class="field-top"><span class="field-label">Tercampur kuat <span class="sym">D₃</span></span><span class="field-value"><span id="val-D3">300</span> m²/s</span></div>
-            <div class="field-row"><input type="range" id="in-D3" min="20" max="500" step="5" value="300"><input type="number" id="num-D3" min="1" max="2000" step="5" value="300"></div>
-          </div>
+        <div class="field">
+          <div class="field-top"><span class="field-label">Debit Qmin</span><span class="field-value"><span id="val-Qmin">15.8</span> m³/s</span></div>
+          <div class="field-row"><input type="range" id="in-Qmin" min="1" max="50" step="0.1" value="15.8"><input type="number" id="num-Qmin" value="15.8"></div>
         </div>
-
-        <button class="action-btn btn-reset" id="btn-reset">Kembalikan ke nilai awal</button>
       </div>
     </div>
 
-    <!-- KANAN: HASIL -->
+    <!-- PANEL KANAN: STATUS & HASIL -->
     <div id="results-col">
+      
+      <!-- BANNER BANJIR HULU -->
+      <div class="panel status-panel" id="flood-panel">
+        <div class="panel-body">
+          <h2 id="flood-title" class="status-title">STATUS BANJIR KIRIMAN</h2>
+          <p id="flood-text" class="status-text"></p>
+          <div class="hujan-grid">
+            <div class="hujan-box"><span>Hujan Sidrap (3Hr)</span><strong id="rain-sidrap">0 mm</strong></div>
+            <div class="hujan-box"><span>Hujan Soppeng (3Hr)</span><strong id="rain-soppeng">0 mm</strong></div>
+          </div>
+        </div>
+      </div>
 
-      <!-- PANEL STATUS DINAMIS DARI GOOGLE APPS SCRIPT -->
-      <div class="panel" id="status-panel">
-        <div class="panel-body" style="padding: 16px;">
+      <!-- BANNER SALINITAS -->
+      <div class="panel status-panel" id="status-panel">
+        <div class="panel-body">
           <h2 id="status-title" class="status-title">STATUS POMPANISASI</h2>
-          <p id="status-text" style="margin:0; font-size: 14px; line-height: 1.5;"></p>
+          <p id="status-text" class="status-text"></p>
         </div>
       </div>
 
+      <!-- TABEL REKAP -->
       <div class="panel">
-        <div class="panel-head">
-          <h2>Kondisi Hidrolik</h2>
-        </div>
-        <div class="panel-body" style="padding:0;">
-          <div class="stat-grid">
-            <div class="stat"><div class="stat-label">Konstanta k</div><div class="stat-value" id="stat-k">—<span class="u">hari</span></div></div>
-            <div class="stat"><div class="stat-label">Debit Qf(t)</div><div class="stat-value" id="stat-Qf">—<span class="u">m³/s</span></div></div>
-            <div class="stat"><div class="stat-label">Luas A</div><div class="stat-value" id="stat-A">—<span class="u">m²</span></div></div>
-            <div class="stat"><div class="stat-label">Kecepatan uf</div><div class="stat-value" id="stat-uf">—<span class="u">m/s</span></div></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="panel">
-        <div class="panel-head">
-          <h2>Distribusi Salinitas (S(x))</h2>
-        </div>
-        <div class="panel-body">
-          <div class="chart-toolbar">
-            <div class="seg" id="scale-toggle">
-              <button data-scale="linear" class="active">Linear</button>
-              <button data-scale="log">Logaritmik</button>
-            </div>
-          </div>
-          <svg id="chart" viewBox="0 0 860 380" style="width:100%; height:auto; display:block;"></svg>
-          <div class="legend-row" id="legend"></div>
-          <div class="point-check">
-            <label for="pc-x">Cek jarak (km):</label>
-            <input type="number" id="pc-x" min="0" max="60" step="0.5" value="15">
-            <div class="pc-results" id="pc-results"></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="panel">
-        <div class="panel-head">
-          <h2>Rekap Jarak</h2>
-        </div>
-        <div class="panel-body">
+        <div class="panel-head"><h2>Rekap Salinitas Titik Pompa</h2></div>
+        <div class="panel-body" style="padding: 0;">
           <div class="table-scroll">
-            <table class="rtable">
-              <thead>
-                <tr>
-                  <th>Jarak</th>
-                  <th class="num">D=<span class="d1-label">100</span></th>
-                  <th class="num">D=<span class="d2-label">150</span></th>
-                  <th class="num">D=<span class="d3-label">300</span></th>
-                </tr>
-              </thead>
+            <table>
+              <thead><tr><th>Jarak Pompa</th><th class="num">Salinitas & Status Padi</th></tr></thead>
               <tbody id="rekap-body"></tbody>
             </table>
           </div>
@@ -427,172 +168,108 @@
 <script>
 (function(){
   "use strict";
-
-  var state = { S0: 30, Qavg: 138, Qmin: 15.8, tkal: 90, t: 60, w: 80, d: 12, D1: 100, D2: 150, D3: 300 };
-  var defaults = Object.assign({}, state);
-  var yScale = "linear";
-
-  var ids = ["S0","Qavg","Qmin","tkal","t","w","d","D1","D2","D3"];
+  var state = { S0: 30, Qavg: 138, Qmin: 15.8, tkal: 90, t: 60, w: 80, d: 12 };
+  var ids = ["S0","Qavg","Qmin","t"];
+  
   function bindField(key){
     var r = document.getElementById("in-" + key), n = document.getElementById("num-" + key);
     r.addEventListener("input", function(){ state[key] = parseFloat(r.value); n.value = r.value; onChange(); });
     n.addEventListener("input", function(){
       if(n.value === "") return;
-      var v = parseFloat(n.value);
-      if(!isNaN(v)){ state[key] = v; r.value = Math.min(Math.max(v, parseFloat(r.min)), parseFloat(r.max)); onChange(); }
+      var v = parseFloat(n.value); if(!isNaN(v)){ state[key] = v; r.value = v; onChange(); }
     });
   }
   ids.forEach(bindField);
 
-  document.getElementById("btn-reset").addEventListener("click", function(){
-    Object.assign(state, defaults);
-    document.getElementById("status-panel").style.display = "none";
-    ids.forEach(function(key){
-      document.getElementById("in-" + key).value = state[key];
-      document.getElementById("num-" + key).value = state[key];
-    });
-    onChange();
-  });
-
-  document.getElementById("scale-toggle").addEventListener("click", function(e){
-    if(e.target.tagName !== "BUTTON") return;
-    yScale = e.target.getAttribute("data-scale");
-    Array.from(this.children).forEach(b => b.classList.toggle("active", b === e.target));
-    onChange();
-  });
-
-  document.getElementById("pc-x").addEventListener("input", onChange);
-
   function statusOf(v){
-    if(v < 1.3) return {cls:"aman", label:"Aman"};
-    if(v <= 5) return {cls:"turun", label:"Penurunan hasil"};
-    return {cls:"gagal", label:"Gagal panen"};
+    if(v < 1.3) return {cls:"aman", label:"Aman (<1.3 ppt)"};
+    if(v <= 5) return {cls:"turun", label:"Turun Hasil"};
+    return {cls:"gagal", label:"Gagal Panen (>5 ppt)"};
   }
 
-  function compute(){
-    var k = state.tkal / Math.log(state.Qavg / state.Qmin);
-    var Qf = state.Qavg * Math.exp(-state.t / k);
-    var A = state.w * state.d;
-    var uf = Qf / A;
-    var Ds = [state.D1, state.D2, state.D3];
-    var kx = Ds.map(D => uf / D);
-    return { k: k, Qf: Qf, A: A, uf: uf, Ds: Ds, kx: kx, salAt: (dist, kxVal) => state.S0 * Math.exp(-kxVal * dist * 1000) };
-  }
-
-  function render(m){
-    document.getElementById("stat-k").innerHTML = m.k.toFixed(1) + '<span class="u">hari</span>';
-    document.getElementById("stat-Qf").innerHTML = m.Qf.toFixed(2) + '<span class="u">m³/s</span>';
-    document.getElementById("stat-A").innerHTML = m.A.toFixed(0) + '<span class="u">m²</span>';
-    document.getElementById("stat-uf").innerHTML = m.uf.toFixed(5) + '<span class="u">m/s</span>';
+  function render(){
+    var k = 90 / Math.log(state.Qavg / state.Qmin);
+    var uf = (state.Qavg * Math.exp(-state.t / k)) / (state.w * state.d);
     
-    ids.slice(7).forEach((k,i) => document.querySelectorAll(".d"+(i+1)+"-label").forEach(el => el.textContent = state[k]));
-
-    var kmVal = parseFloat(document.getElementById("pc-x").value) || 0;
-    document.getElementById("pc-results").innerHTML = m.kx.map((kxVal, i) => {
-      var v = m.salAt(kmVal, kxVal), st = statusOf(v);
-      return `<span class="pc-chip pill ${st.cls}">D=${m.Ds[i]}: ${v.toFixed(2)} ppt</span>`;
+    document.getElementById("rekap-body").innerHTML = [10, 15, 20, 25, 30].map(km => {
+      var sal = state.S0 * Math.exp(-(uf / 150) * km * 1000);
+      var st = statusOf(sal);
+      return `<tr><td><b>${km} km</b></td><td class="num">${sal.toFixed(2)} ppt <span class="pill ${st.cls}" style="margin-left:6px">${st.label}</span></td></tr>`;
     }).join("");
-
-    document.getElementById("rekap-body").innerHTML = [10, 20, 30].map(km => {
-      var cells = m.kx.map((kxVal, i) => {
-        var v = m.salAt(km, kxVal), st = statusOf(v);
-        return `<td class="num"><span class="val-wrap">${v.toFixed(2)} ppt<span class="pill ${st.cls}">${st.label}</span></span></td>`;
-      }).join("");
-      return `<tr><td>${km} km</td>${cells}</tr>`;
-    }).join("");
-    
-    drawChart(m);
-  }
-
-  function drawChart(m){
-    var svg = document.getElementById("chart"), W = svg.clientWidth || 800, H = W * 0.44;
-    svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
-    var pad = {l: 54, r: 18, t: 14, b: 36}, pW = W - pad.l - pad.r, pH = H - pad.t - pad.b;
-    var yToP = v => yScale === "log" ? pad.t + (1 - (Math.log10(Math.max(v, 0.01)) - Math.log10(0.01))/(Math.log10(state.S0) - Math.log10(0.01))) * pH : pad.t + (1 - Math.min(Math.max(v/state.S0,0),1)) * pH;
-    var xToP = km => pad.l + (km / 30) * pW;
-    
-    var pts = m.kx.map(kxV => Array.from({length: 60}, (_,i) => `${xToP(i*0.5)},${yToP(m.salAt(i*0.5, kxV)).toFixed(1)}`).join(" "));
-    var cols = ["#4d92a0", "#b4801f", "#a8431e"];
-    
-    svg.innerHTML = `
-      ${ [0, 5, 10, 15, 20, 25, 30].map(x => `<line x1="${xToP(x)}" y1="${pad.t}" x2="${xToP(x)}" y2="${H-pad.b}" stroke="#eef1ea"/><text x="${xToP(x)}" y="${H-pad.b+18}" text-anchor="middle" font-size="11" fill="#7c8a80">${x}</text>`).join("") }
-      ${ (yScale==="log"? [0.01,0.1,1,5,10,state.S0] : [0, state.S0*0.5, state.S0]).map(y => `<line x1="${pad.l}" y1="${yToP(y)}" x2="${W-pad.r}" y2="${yToP(y)}" stroke="#e2e7dc"/><text x="${pad.l-8}" y="${yToP(y)+4}" text-anchor="end" font-size="11" fill="#7c8a80">${y}</text>`).join("") }
-      ${ [1.3, 5].filter(th=>th<=state.S0 || yScale==="log").map(th => `<line x1="${pad.l}" y1="${yToP(th)}" x2="${W-pad.r}" y2="${yToP(th)}" stroke="#97a394" stroke-dasharray="4 4"/><text x="${W-pad.r-4}" y="${yToP(th)-4}" text-anchor="end" font-size="10.5" fill="#7c8a80">${th} ppt</text>`).join("") }
-      ${ pts.map((p,i) => `<polyline points="${p}" fill="none" stroke="${cols[i]}" stroke-width="2.4"/>`).join("") }
-      <rect x="${pad.l}" y="${pad.t}" width="${pW}" height="${pH}" fill="none" stroke="#c7cec0"/>
-    `;
-    document.getElementById("legend").innerHTML = m.Ds.map((d,i) => `<span><span class="swatch" style="background:${cols[i]}"></span>D=${d}</span>`).join("") + `<span><span class="swatch dash"></span>Ambang</span>`;
   }
 
   function onChange(){
     document.querySelectorAll('[id^="val-"]').forEach(el => {
       var k = el.id.replace("val-", ""); if(state[k]!==undefined) el.textContent = state[k];
     });
-    render(compute());
+    render();
   }
 
-  // --- API LOGIC (Google Apps Script) ---
-  const URL_GAS = "https://script.google.com/macros/s/AKfycbyY-9I7PQnl6KWU9lny69t4uFBqf_Vn3B9wc1qISJazP8GXjWYyeKt6nKHGakkVPEGp/exec";
+  const URL_GAS = "https://script.google.com/macros/s/AKfycbwgGgV73Cp_-thQ6ymUq5X1RiPxTXHLHvZRGc5V2bFITRGYjobpdlr3LZGhyRybucK4/exec";
 
   document.getElementById("btn-sync").addEventListener("click", async function(){
-    var btn = this, oldText = btn.textContent;
-    btn.textContent = "Mengambil data harian..."; 
-    btn.disabled = true;
+    var btn = this; btn.textContent = "Menarik Data Satelit..."; btn.disabled = true;
     
     try {
       var res = await fetch(URL_GAS);
       var data = await res.json();
-      
-      // Jika server membalas pesan error (seperti "Data belum tersedia")
-      if(data.error) {
-        alert("Server merespons: " + data.error + "\nPastikan Pemicu (Trigger) di Apps Script sudah berjalan setidaknya satu kali.");
-        throw new Error(data.error);
-      }
+      if(data.error) throw new Error(data.error);
 
-      // Update parameter dari server
-      state.t = data.hari_tanpa_hujan; 
-      document.getElementById("in-t").value = state.t; 
-      document.getElementById("num-t").value = state.t;
+      // --- 1. PROSES SALINITAS ---
+      state.t = Number(data.hari_tanpa_hujan) || 0; 
+      document.getElementById("in-t").value = state.t; document.getElementById("num-t").value = state.t;
+      var panelSal = document.getElementById("status-panel");
+      panelSal.style.display = "block"; panelSal.className = "panel status-panel";
       
-      var panel = document.getElementById("status-panel");
-      var title = document.getElementById("status-title");
-      var text = document.getElementById("status-text");
-      
-      panel.style.display = "block";
-      panel.className = "panel"; 
-
-      // Waktu Pembaruan Terakhir
-      var dateUpdate = new Date(data.terakhir_diperbarui).toLocaleString('id-ID');
-      var footNote = `<span class="status-time">Diperbarui oleh satelit pada: ${dateUpdate}</span>`;
-
-      // Logika Status Berdasarkan Data Harian
-      // Asumsi pasang di atas 1.5 meter = pasang kuat (ekstrem) untuk estuari ini
       var maxTideNum = Number(data.max_tide_meter) || 0;
-      
+      var footNote = `<span class="status-time">Pembaruan: ${new Date(data.terakhir_diperbarui).toLocaleString('id-ID')}</span>`;
+
       if(maxTideNum >= 1.5 && state.t >= 60) {
-        state.D1 = 300; state.D2 = 300; state.D3 = 300; // Kunci ke kondisi tercampur kuat
-        panel.classList.add("status-darurat");
-        title.textContent = "STATUS DARURAT: PASANG EKSTREM";
-        text.innerHTML = `Tinggi pasang laut hari ini mencapai <b>${maxTideNum.toFixed(2)} meter</b> dengan debit air tawar kritis. Segera matikan operasional pompa irigasi. Simulasi dipaksa menggunakan dispersi ekstrem (D=300). ${footNote}`;
+        panelSal.classList.add("status-darurat");
+        document.getElementById("status-title").textContent = "DARURAT SALINITAS (PASANG EKSTREM)";
+        document.getElementById("status-text").innerHTML = `Pasang laut tercatat <b>${maxTideNum.toFixed(2)} meter</b> dengan durasi kemarau kritis. <b>Hentikan total operasional pompa irigasi!</b> ${footNote}`;
       } else if (data.angin_laut_aktif) {
-        panel.classList.add("status-waspada");
-        title.textContent = "STATUS WASPADA (ANGIN LAUT KUAT)";
-        text.innerHTML = `Terdeteksi angin dominan dari arah laut. Intrusi salinitas dapat terdorong lebih jauh dari estimasi model. Batasi jam sedot air. ${footNote}`;
+        panelSal.classList.add("status-waspada");
+        document.getElementById("status-title").textContent = "WASPADA (ANGIN LAUT KUAT)";
+        document.getElementById("status-text").innerHTML = `Pasang laut <b>${maxTideNum.toFixed(2)} meter</b> disertai angin laut aktif. Intrusi salinitas terdorong lebih jauh, batasi jam sedot air. ${footNote}`;
       } else {
-        panel.classList.add("status-aman");
-        title.textContent = "STATUS AMAN";
-        text.innerHTML = `Ketinggian pasang normal (max ${maxTideNum.toFixed(2)} m) dan arah angin aman. Pemompaan dapat dimaksimalkan berdasarkan batas jarak harian. ${footNote}`;
+        panelSal.classList.add("status-aman");
+        document.getElementById("status-title").textContent = "SALINITAS AMAN";
+        document.getElementById("status-text").innerHTML = `Pasang laut normal <b>${maxTideNum.toFixed(2)} meter</b>. Kondisi aman untuk penjadwalan pemompaan irigasi. ${footNote}`;
       }
       
-      ids.forEach(k => { document.getElementById("in-" + k).value = state[k]; document.getElementById("num-" + k).value = state[k]; });
+      // --- 2. PROSES BANJIR HULU ---
+      var panelFlood = document.getElementById("flood-panel");
+      panelFlood.style.display = "block"; panelFlood.className = "panel status-panel";
+      
+      var hSidrap = parseFloat(data.hujan_sidrap_3hr) || 0;
+      var hSoppeng = parseFloat(data.hujan_soppeng_3hr) || 0;
+      document.getElementById("rain-sidrap").textContent = hSidrap.toFixed(1) + " mm";
+      document.getElementById("rain-soppeng").textContent = hSoppeng.toFixed(1) + " mm";
+      
+      var maxHulu = Math.max(hSidrap, hSoppeng);
+
+      if (maxHulu > 100) {
+        panelFlood.classList.add("status-darurat");
+        document.getElementById("flood-title").textContent = "SIAGA 1: ANCAMAN BANJIR KIRIMAN";
+        document.getElementById("flood-text").innerHTML = `Hujan hulu melampaui 100 mm. Air bah berpotensi meluap ke sawah hilir dalam 24-48 jam. Amankan mesin pompa!`;
+      } else if (maxHulu > 50) {
+        panelFlood.classList.add("status-banjir-awas");
+        document.getElementById("flood-title").textContent = "WASPADA: DEBIT AIR HULU NAIK";
+        document.getElementById("flood-text").innerHTML = `Curah hujan hulu cukup tinggi (>50 mm). Pantau kenaikan muka air secara berkala.`;
+      } else {
+        panelFlood.classList.add("status-aman");
+        document.getElementById("flood-title").textContent = "HULU AMAN (TIDAK ADA BANJIR)";
+        document.getElementById("flood-text").innerHTML = `Curah hujan di hulu terpantau normal dan stabil.`;
+      }
+
       onChange();
-      btn.textContent = `Update Selesai (${state.t} hari kemarau)`;
+      btn.textContent = "Sinkronisasi Berhasil";
       
     } catch(e) { 
-      console.error(e);
-      btn.textContent = "Gagal terhubung ke server"; 
+      btn.textContent = "Gagal Mengambil Data"; 
     }
-    setTimeout(() => { btn.textContent = oldText; btn.disabled = false; }, 5000);
+    setTimeout(() => { btn.textContent = "Sinkronisasi Data Satelit Terkini"; btn.disabled = false; }, 4000);
   });
 
   onChange();
