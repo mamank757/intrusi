@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Simulasi Intrusi Salinitas — Sungai Walanae</title>
+<title>Simulasi Intrusi Salinitas — Sungai Walanae (Manurung)</title>
 <style>
   :root{
     --bg: #eef2ec;
@@ -110,6 +110,7 @@
     background: var(--paper);
     border: 1px solid var(--line);
     border-radius: var(--radius);
+    transition: all 0.3s ease;
   }
   .panel + .panel{ margin-top: 22px; }
 
@@ -131,7 +132,7 @@
   }
   .panel-body{ padding: 16px 18px 20px; }
 
-  /* ---------- Controls (left column) ---------- */
+  /* ---------- Controls ---------- */
   .controls-group{ margin-bottom: 20px; }
   .controls-group:last-child{ margin-bottom: 0; }
   .controls-group h3{
@@ -186,22 +187,12 @@
     white-space: nowrap;
   }
   .field-row{ display: flex; align-items: center; gap: 10px; }
-  input[type="range"]{
-    flex: 1;
-    accent-color: var(--river);
-    height: 4px;
-  }
+  input[type="range"]{ flex: 1; accent-color: var(--river); height: 4px; }
   input[type="number"]{
-    width: 72px;
-    font-family: var(--mono);
-    font-size: 13px;
-    border: 1px solid var(--line);
-    border-radius: var(--radius);
-    padding: 4px 6px;
-    color: var(--ink);
-    background: #fff;
+    width: 72px; font-family: var(--mono); font-size: 13px;
+    border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 4px 6px; color: var(--ink); background: #fff;
   }
-  .unit{ font-size: 12px; color: var(--ink-soft); min-width: 30px; }
 
   .field.primary{
     background: var(--amber-bg);
@@ -212,296 +203,86 @@
   }
   .field.primary .field-label{ font-weight: 600; }
 
-  .reset-btn{
+  /* Tombol Tulisan Saja */
+  .btn-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .action-btn{
     width: 100%;
-    margin-top: 18px;
-    padding: 9px 12px;
+    padding: 10px 12px;
     background: #fff;
     border: 1px solid var(--line);
     border-radius: var(--radius);
-    color: var(--river-deep);
     font-size: 13px;
     font-family: var(--sans);
+    font-weight: 600;
     cursor: pointer;
+    text-align: center;
+    transition: all 0.2s;
   }
-  .reset-btn:hover{ border-color: var(--river); }
+  .btn-sync { background: #e7f0e0; border-color: #4c7a3d; color: #4c7a3d; }
+  .btn-tide { background: #e0f2fe; border-color: #0284c7; color: #0284c7; }
+  .btn-reset { margin-top: 18px; color: var(--ink-soft); }
+
+  .action-btn:disabled { opacity: 0.6; cursor: wait; }
+
+  /* ---------- Warning Banner ---------- */
+  #status-panel { display: none; }
+  .status-darurat { background: var(--clay-bg); border-color: var(--clay); color: var(--clay); }
+  .status-waspada { background: var(--amber-bg); border-color: var(--amber); color: #825b12; }
+  .status-aman { background: var(--paddy-bg); border-color: var(--paddy); color: var(--paddy); }
+  .status-title { font-family: var(--sans); font-size: 16px; font-weight: 600; margin: 0 0 4px; text-transform: uppercase; }
 
   /* ---------- Stat readout ---------- */
   .stat-grid{
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 1px;
-    background: var(--line);
-    border: 1px solid var(--line);
-    border-radius: var(--radius);
-    overflow: hidden;
+    gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden;
   }
-  @media (max-width: 640px){
-    .stat-grid{ grid-template-columns: repeat(2, 1fr); }
-  }
-  .stat{
-    background: var(--paper);
-    padding: 16px 16px 14px;
-  }
-  .stat-label{
-    font-size: 12px;
-    color: var(--ink-soft);
-    margin-bottom: 6px;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-  }
-  .stat-value{
-    font-family: var(--mono);
-    font-size: 22px;
-    color: var(--river-deep);
-    line-height: 1.1;
-  }
+  @media (max-width: 640px){ .stat-grid{ grid-template-columns: repeat(2, 1fr); } }
+  .stat{ background: var(--paper); padding: 16px 16px 14px; }
+  .stat-label{ font-size: 12px; color: var(--ink-soft); margin-bottom: 6px; display: flex; align-items: center; gap: 5px; }
+  .stat-value{ font-family: var(--mono); font-size: 22px; color: var(--river-deep); line-height: 1.1; }
   .stat-value .u{ font-size: 13px; color: var(--ink-soft); margin-left: 3px; }
 
-  /* ---------- Chart ---------- */
-  .chart-toolbar{
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 14px;
-    margin-bottom: 8px;
-    font-size: 12.5px;
-    color: var(--ink-soft);
-  }
-  .seg{
-    display: inline-flex;
-    border: 1px solid var(--line);
-    border-radius: var(--radius);
-    overflow: hidden;
-  }
-  .seg button{
-    border: none;
-    background: #fff;
-    padding: 5px 10px;
-    font-size: 12.5px;
-    font-family: var(--sans);
-    cursor: pointer;
-    color: var(--ink-soft);
-  }
-  .seg button + button{ border-left: 1px solid var(--line); }
+  /* ---------- Chart & Tables (Singkat) ---------- */
+  .chart-toolbar{ display: flex; align-items: center; justify-content: flex-end; gap: 14px; margin-bottom: 8px; font-size: 12.5px; color: var(--ink-soft); }
+  .seg{ display: inline-flex; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+  .seg button{ border: none; background: #fff; padding: 5px 10px; font-size: 12.5px; cursor: pointer; color: var(--ink-soft); }
   .seg button.active{ background: var(--river); color: #fff; }
-
-  .legend-row{
-    display: flex;
-    flex-wrap: wrap;
-    gap: 16px;
-    margin-top: 10px;
-    font-size: 12.5px;
-    color: var(--ink-soft);
-  }
+  .legend-row{ display: flex; flex-wrap: wrap; gap: 16px; margin-top: 10px; font-size: 12.5px; color: var(--ink-soft); }
   .legend-row span{ display: inline-flex; align-items: center; gap: 6px; }
   .swatch{ width: 14px; height: 3px; border-radius: 2px; display: inline-block; }
   .swatch.dash{ background: repeating-linear-gradient(90deg, #97a394 0 4px, transparent 4px 7px); }
-
-  /* point-check tool */
-  .point-check{
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex-wrap: wrap;
-    margin-top: 16px;
-    padding: 12px 14px;
-    background: #f4f6f0;
-    border: 1px solid var(--line);
-    border-radius: var(--radius);
-    font-size: 13.5px;
-  }
+  .point-check{ display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 16px; padding: 12px 14px; background: #f4f6f0; border: 1px solid var(--line); border-radius: var(--radius); font-size: 13.5px; }
   .point-check input[type="number"]{ width: 64px; }
   .pc-results{ display: flex; gap: 10px; flex-wrap: wrap; }
-  .pc-chip{
-    font-family: var(--mono);
-    font-size: 12.5px;
-    padding: 3px 8px;
-    border-radius: 20px;
-    white-space: nowrap;
-  }
-
-  /* ---------- Tables ---------- */
-  table{
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 13.5px;
-  }
-  th, td{
-    text-align: left;
-    padding: 8px 10px;
-    border-bottom: 1px solid var(--line);
-    white-space: nowrap;
-  }
-  th{
-    font-weight: 600;
-    color: var(--ink-soft);
-    font-size: 12.5px;
-  }
+  .pc-chip{ font-family: var(--mono); font-size: 12.5px; padding: 3px 8px; border-radius: 20px; white-space: nowrap; }
+  table{ width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  th, td{ text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  th{ font-weight: 600; color: var(--ink-soft); font-size: 12.5px; }
   td.num, th.num{ font-family: var(--mono); text-align: right; }
   .table-scroll{ overflow-x: auto; }
-
-  .pill{
-    display: inline-block;
-    padding: 2px 9px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-family: var(--sans);
-  }
+  .pill{ display: inline-block; padding: 2px 9px; border-radius: 20px; font-size: 12px; font-family: var(--sans); }
   .pill.aman{ background: var(--paddy-bg); color: var(--paddy); }
   .pill.turun{ background: var(--amber-bg); color: var(--amber); }
   .pill.gagal{ background: var(--clay-bg); color: var(--clay); }
-
-  .threshold-list{ list-style: none; margin: 0; padding: 0; }
-  .threshold-list li{
-    display: flex;
-    gap: 12px;
-    padding: 9px 0;
-    border-bottom: 1px solid var(--line);
-    align-items: baseline;
-  }
-  .threshold-list li:last-child{ border-bottom: none; }
-  .threshold-list .pill{ flex: none; min-width: 118px; text-align: center; }
-  .threshold-list .range{ font-family: var(--mono); font-size: 13px; color: var(--ink-soft); min-width: 70px; }
-  .threshold-list .desc{ font-size: 13px; color: var(--ink-soft); }
-
-  footer{
-    max-width: 1120px;
-    margin: 0 auto;
-    padding: 0 24px 50px;
-    color: var(--ink-soft);
-    font-size: 12.5px;
-  }
+  .val-wrap{ display: inline-flex; flex-direction: column; align-items: flex-end; gap: 3px; }
+  
+  footer{ max-width: 1120px; margin: 0 auto; padding: 0 24px 50px; color: var(--ink-soft); font-size: 12.5px; }
   footer .foot-line{ border-top: 1px solid var(--line); padding-top: 16px; margin-top: 6px; }
-
-  /* ---------- value + status pill stack (used in tables) ---------- */
-  .val-wrap{
-    display: inline-flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 3px;
-  }
-
-  /* ---------- tap-to-open info bubble (mobile-friendly replacement for title tooltip) ---------- */
-  .info-dot{ position: relative; }
-  #info-bubble{
-    display: none;
-    position: fixed;
-    z-index: 50;
-    max-width: 260px;
-    background: var(--river-deep);
-    color: #eaf4f2;
-    font-size: 12.5px;
-    line-height: 1.45;
-    font-family: var(--sans);
-    padding: 10px 12px;
-    border-radius: var(--radius);
-    box-shadow: 0 8px 22px rgba(0,0,0,0.22);
-  }
-  #info-bubble.open{ display: block; }
-  #info-bubble::after{
-    content: "";
-    position: absolute;
-    top: -5px;
-    left: var(--arrow-x, 14px);
-    width: 9px; height: 9px;
-    background: var(--river-deep);
-    transform: rotate(45deg);
-  }
-
-  /* ---------- sticky first column while a table is still a real <table> (tablet & desktop) ---------- */
-  @media (min-width: 641px){
-    .table-scroll table th:first-child,
-    .table-scroll table td:first-child{
-      position: sticky;
-      left: 0;
-      background: var(--paper);
-    }
-  }
-
-  /* =====================================================================
-     MOBILE (≤ 640px): tighter spacing, tables become stacked cards,
-     inputs sized to avoid iOS auto-zoom, touch-friendlier controls.
-     ===================================================================== */
-  @media (max-width: 640px){
-    header.hero{ padding: 26px 16px 0; }
-    .hero-inner{ padding-bottom: 20px; }
-    .hero-eyebrow{ font-size: 11.5px; }
-    .hero-desc{ font-size: 14px; margin-bottom: 16px; }
-    .hero-formula{ font-size: 11.5px; padding: 8px 10px; }
-
-    main{ padding: 18px 12px 56px; }
-    .layout{ gap: 14px; }
-    .panel + .panel{ margin-top: 14px; }
-    .panel-head{ padding: 13px 14px 10px; }
-    .panel-body{ padding: 13px 14px 16px; }
-
-    .stat{ padding: 13px 12px 11px; }
-    .stat-value{ font-size: 19px; }
-
-    /* inputs: 16px font stops iOS Safari from zooming in on focus */
-    input[type="number"]{
-      font-size: 16px;
-      padding: 7px 8px;
-      width: 62px;
-    }
-    input[type="range"]{
-      height: 28px; /* larger touch target, track stays thin via accent */
-    }
-
-    .point-check{ row-gap: 10px; }
-    .point-check input[type="number"]{ width: 58px; }
-
-    .threshold-list li{ flex-wrap: wrap; }
-    .threshold-list .desc{ flex-basis: 100%; margin-top: 2px; }
-
-    /* ---- tables become stacked cards, no horizontal scrolling ---- */
-    .rtable thead{ display: none; }
-    .rtable, .rtable tbody, .rtable tr, .rtable td{ display: block; width: 100%; }
-    .rtable{ border: none; }
-    .rtable tr{
-      border: 1px solid var(--line);
-      border-radius: 4px;
-      padding: 10px 12px 2px;
-      margin-bottom: 10px;
-    }
-    .rtable tr:last-child{ margin-bottom: 0; }
-    .rtable td{
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      padding: 8px 0;
-      white-space: normal;
-    }
-    .rtable td:first-child{
-      font-weight: 600;
-      font-size: 14.5px;
-      color: var(--river-deep);
-      padding-top: 0;
-    }
-    .rtable td:not(:first-child)::before{
-      content: attr(data-label);
-      color: var(--ink-soft);
-      font-size: 12px;
-      font-family: var(--sans);
-      padding-right: 10px;
-    }
-  }
 </style>
 </head>
 <body>
 
 <header class="hero">
   <div class="hero-inner">
-    <p class="hero-eyebrow">Model resesi baseflow &amp; dispersi longitudinal</p>
-    <h1>Simulasi intrusi salinitas, Sungai Walanae</h1>
-    <p class="hero-desc">Memperkirakan seberapa jauh air asin naik ke hulu sungai saat musim kemarau panjang menekan debit air tawar, dan dampaknya terhadap ambang toleransi salinitas sawah padi di sepanjang aliran.</p>
-    <div class="hero-formula">
-      <div>S(x) = S₀ · exp( −(Qf(t)/A) / D · x )</div>
-      <div>Qf(t) = Qavg · exp( −t / k )</div>
-    </div>
+    <p class="hero-eyebrow">Sistem Peringatan Dini Salinitas Air Irigasi Padi</p>
+    <h1>Simulasi Intrusi Salinitas, Sungai Walanae</h1>
+    <p class="hero-desc">Memperkirakan seberapa jauh baji garam naik ke hulu sungai saat musim kemarau dan menentukan status operasi pompa untuk lahan sawah terhubung.</p>
   </div>
   <svg class="river-wave" viewBox="0 0 1200 46" preserveAspectRatio="none">
     <path d="M0,22 C150,42 300,2 450,20 C600,38 750,4 900,22 C1050,40 1150,10 1200,20 L1200,46 L0,46 Z" fill="#eef2ec"></path>
@@ -511,195 +292,114 @@
 <main>
   <div class="layout">
 
-    <!-- ===================== LEFT: CONTROLS ===================== -->
+    <!-- KIRI: CONTROLS -->
     <div class="panel" id="controls-panel">
       <div class="panel-head">
-        <h2>Parameter</h2>
-        <p>Ubah nilai untuk melihat hasil simulasi diperbarui langsung.</p>
+        <h2>Parameter Kendali</h2>
+        <p>Sesuaikan angka atau sinkronkan data lapangan.</p>
       </div>
       <div class="panel-body">
 
-        <!-- Tombol Sinkronisasi Cuaca -->
-        <button id="btn-sync" class="reset-btn" style="margin-top: 0; margin-bottom: 16px; background: #e7f0e0; border-color: #4c7a3d; color: #4c7a3d; font-weight: 600;">Sinkronisasi Data Cuaca Terkini</button>
+        <!-- Tombol Sinkronisasi (Hanya Tulisan) -->
+        <div class="btn-group">
+          <button id="btn-sync" class="action-btn btn-sync">Sinkronisasi Data Cuaca (Hujan)</button>
+          <button id="btn-tide" class="action-btn btn-tide">Analisis Pasang Surut & Angin</button>
+        </div>
 
         <div class="field primary" id="field-t">
           <div class="field-top">
-            <span class="field-label">Durasi tanpa hujan saat ini <span class="sym">t</span>
-              <span class="info-dot" role="button" tabindex="0" data-note="Variabel utama: mengontrol seluruh hasil simulasi di bawah.">i</span>
-            </span>
-            <span class="field-value"><span id="val-t">100</span> hari</span>
+            <span class="field-label">Durasi tanpa hujan saat ini <span class="sym">t</span></span>
+            <span class="field-value"><span id="val-t">60</span> hari</span>
           </div>
           <div class="field-row">
-            <input type="range" id="in-t" min="0" max="200" step="1" value="100">
-            <input type="number" id="num-t" min="0" max="365" step="1" value="100">
+            <input type="range" id="in-t" min="0" max="200" step="1" value="60">
+            <input type="number" id="num-t" min="0" max="365" step="1" value="60">
           </div>
         </div>
 
         <div class="controls-group">
           <h3>Parameter dasar</h3>
-
-          <div class="field" id="field-S0">
-            <div class="field-top">
-              <span class="field-label">Salinitas di mulut sungai <span class="sym">S₀</span>
-                <span class="info-dot" role="button" tabindex="0" data-note="Asumsi: laut lepas Indonesia timur ~32–34 ppt, turun karena percampuran awal di mulut sungai.">i</span>
-              </span>
-              <span class="field-value"><span id="val-S0">30</span> ppt</span>
-            </div>
-            <div class="field-row">
-              <input type="range" id="in-S0" min="10" max="40" step="0.5" value="30">
-              <input type="number" id="num-S0" min="0" max="40" step="0.5" value="30">
-            </div>
+          <div class="field">
+            <div class="field-top"><span class="field-label">Salinitas mulut sungai <span class="sym">S₀</span></span><span class="field-value"><span id="val-S0">30</span> ppt</span></div>
+            <div class="field-row"><input type="range" id="in-S0" min="10" max="40" step="0.5" value="30"><input type="number" id="num-S0" min="0" max="40" step="0.5" value="30"></div>
           </div>
-
-          <div class="field" id="field-Qavg">
-            <div class="field-top">
-              <span class="field-label">Debit rata-rata tahunan <span class="sym">Qavg</span>
-                <span class="info-dot" role="button" tabindex="0" data-note="Faktual: debit rata-rata Sungai Walanae, Stasiun Tampangeng (2000–2014).">i</span>
-              </span>
-              <span class="field-value"><span id="val-Qavg">138</span> m³/s</span>
-            </div>
-            <div class="field-row">
-              <input type="range" id="in-Qavg" min="50" max="300" step="1" value="138">
-              <input type="number" id="num-Qavg" min="1" max="1000" step="1" value="138">
-            </div>
+          <div class="field">
+            <div class="field-top"><span class="field-label">Debit rata-rata <span class="sym">Qavg</span></span><span class="field-value"><span id="val-Qavg">138</span> m³/s</span></div>
+            <div class="field-row"><input type="range" id="in-Qavg" min="50" max="300" step="1" value="138"><input type="number" id="num-Qavg" min="1" max="1000" step="1" value="138"></div>
           </div>
-
-          <div class="field" id="field-Qmin">
-            <div class="field-top">
-              <span class="field-label">Debit minimum tahunan <span class="sym">Qmin</span>
-                <span class="info-dot" role="button" tabindex="0" data-note="Faktual: debit minimum tahunan Sungai Walanae, Stasiun Tampangeng (2000–2014). Harus lebih kecil dari Qavg.">i</span>
-              </span>
-              <span class="field-value"><span id="val-Qmin">15.8</span> m³/s</span>
-            </div>
-            <div class="field-row">
-              <input type="range" id="in-Qmin" min="1" max="50" step="0.1" value="15.8">
-              <input type="number" id="num-Qmin" min="0.1" max="500" step="0.1" value="15.8">
-            </div>
+          <div class="field">
+            <div class="field-top"><span class="field-label">Debit minimum <span class="sym">Qmin</span></span><span class="field-value"><span id="val-Qmin">15.8</span> m³/s</span></div>
+            <div class="field-row"><input type="range" id="in-Qmin" min="1" max="50" step="0.1" value="15.8"><input type="number" id="num-Qmin" min="0.1" max="500" step="0.1" value="15.8"></div>
           </div>
-
-          <div class="field" id="field-tkal">
-            <div class="field-top">
-              <span class="field-label">Durasi kemarau acuan <span class="sym">t_kal</span>
-                <span class="info-dot" role="button" tabindex="0" data-note="Panjang musim kemarau khas (Sept–Nov) yang berkorespondensi dengan Qmin.">i</span>
-              </span>
-              <span class="field-value"><span id="val-tkal">90</span> hari</span>
-            </div>
-            <div class="field-row">
-              <input type="range" id="in-tkal" min="30" max="180" step="1" value="90">
-              <input type="number" id="num-tkal" min="1" max="365" step="1" value="90">
-            </div>
+          <div class="field">
+            <div class="field-top"><span class="field-label">Kemarau acuan <span class="sym">t_kal</span></span><span class="field-value"><span id="val-tkal">90</span> hari</span></div>
+            <div class="field-row"><input type="range" id="in-tkal" min="30" max="180" step="1" value="90"><input type="number" id="num-tkal" min="1" max="365" step="1" value="90"></div>
           </div>
         </div>
 
         <div class="controls-group">
-          <h3>Geometri penampang sungai</h3>
-
-          <div class="field" id="field-w">
-            <div class="field-top">
-              <span class="field-label">Lebar penampang <span class="sym">w</span>
-                <span class="info-dot" role="button" tabindex="0" data-note="Asumsi teknik — data cross-section publik tidak tersedia. Ganti jika ada data ukur lapangan.">i</span>
-              </span>
-              <span class="field-value"><span id="val-w">80</span> m</span>
-            </div>
-            <div class="field-row">
-              <input type="range" id="in-w" min="20" max="250" step="1" value="80">
-              <input type="number" id="num-w" min="1" max="1000" step="1" value="80">
-            </div>
+          <h3>Geometri penampang</h3>
+          <div class="field">
+            <div class="field-top"><span class="field-label">Lebar <span class="sym">w</span></span><span class="field-value"><span id="val-w">80</span> m</span></div>
+            <div class="field-row"><input type="range" id="in-w" min="20" max="250" step="1" value="80"><input type="number" id="num-w" min="1" max="1000" step="1" value="80"></div>
           </div>
-
-          <div class="field" id="field-d">
-            <div class="field-top">
-              <span class="field-label">Kedalaman rata-rata <span class="sym">d</span>
-                <span class="info-dot" role="button" tabindex="0" data-note="Nilai tengah dari rentang faktual kedalaman dekat muara Sungai Walanae (10–15 m).">i</span>
-              </span>
-              <span class="field-value"><span id="val-d">12</span> m</span>
-            </div>
-            <div class="field-row">
-              <input type="range" id="in-d" min="2" max="30" step="0.5" value="12">
-              <input type="number" id="num-d" min="0.5" max="100" step="0.5" value="12">
-            </div>
+          <div class="field">
+            <div class="field-top"><span class="field-label">Kedalaman <span class="sym">d</span></span><span class="field-value"><span id="val-d">12</span> m</span></div>
+            <div class="field-row"><input type="range" id="in-d" min="2" max="30" step="0.5" value="12"><input type="number" id="num-d" min="0.5" max="100" step="0.5" value="12"></div>
           </div>
         </div>
 
         <div class="controls-group">
-          <h3>Koefisien dispersi longitudinal (D)</h3>
-
-          <div class="field" id="field-D1">
-            <div class="field-top">
-              <span class="field-label">Dispersi rendah <span class="sym">D₁</span></span>
-              <span class="field-value"><span id="val-D1">100</span> m²/s</span>
-            </div>
-            <div class="field-row">
-              <input type="range" id="in-D1" min="20" max="500" step="5" value="100">
-              <input type="number" id="num-D1" min="1" max="2000" step="5" value="100">
-            </div>
+          <h3>Koefisien Dispersi (D)</h3>
+          <div class="field">
+            <div class="field-top"><span class="field-label">Dispersi rendah <span class="sym">D₁</span></span><span class="field-value"><span id="val-D1">100</span> m²/s</span></div>
+            <div class="field-row"><input type="range" id="in-D1" min="20" max="500" step="5" value="100"><input type="number" id="num-D1" min="1" max="2000" step="5" value="100"></div>
           </div>
-
-          <div class="field" id="field-D2">
-            <div class="field-top">
-              <span class="field-label">Dispersi sedang <span class="sym">D₂</span></span>
-              <span class="field-value"><span id="val-D2">150</span> m²/s</span>
-            </div>
-            <div class="field-row">
-              <input type="range" id="in-D2" min="20" max="500" step="5" value="150">
-              <input type="number" id="num-D2" min="1" max="2000" step="5" value="150">
-            </div>
+          <div class="field">
+            <div class="field-top"><span class="field-label">Dispersi sedang <span class="sym">D₂</span></span><span class="field-value"><span id="val-D2">150</span> m²/s</span></div>
+            <div class="field-row"><input type="range" id="in-D2" min="20" max="500" step="5" value="150"><input type="number" id="num-D2" min="1" max="2000" step="5" value="150"></div>
           </div>
-
-          <div class="field" id="field-D3">
-            <div class="field-top">
-              <span class="field-label">Tercampur kuat <span class="sym">D₃</span></span>
-              <span class="field-value"><span id="val-D3">300</span> m²/s</span>
-            </div>
-            <div class="field-row">
-              <input type="range" id="in-D3" min="20" max="500" step="5" value="300">
-              <input type="number" id="num-D3" min="1" max="2000" step="5" value="300">
-            </div>
+          <div class="field">
+            <div class="field-top"><span class="field-label">Tercampur kuat <span class="sym">D₃</span></span><span class="field-value"><span id="val-D3">300</span> m²/s</span></div>
+            <div class="field-row"><input type="range" id="in-D3" min="20" max="500" step="5" value="300"><input type="number" id="num-D3" min="1" max="2000" step="5" value="300"></div>
           </div>
         </div>
 
-        <button class="reset-btn" id="reset-btn">Kembalikan ke nilai awal</button>
+        <button class="action-btn btn-reset" id="btn-reset">Kembalikan ke nilai awal</button>
       </div>
     </div>
 
-    <!-- ===================== RIGHT: RESULTS ===================== -->
+    <!-- KANAN: HASIL -->
     <div id="results-col">
+
+      <!-- PANEL STATUS DINAMIS -->
+      <div class="panel" id="status-panel">
+        <div class="panel-body" style="padding: 16px;">
+          <h2 id="status-title" class="status-title">STATUS POMPANISASI</h2>
+          <p id="status-text" style="margin:0; font-size: 14px; line-height: 1.5;"></p>
+        </div>
+      </div>
 
       <div class="panel">
         <div class="panel-head">
-          <h2>Kondisi hidrolik saat ini</h2>
-          <p>Diturunkan dari parameter di samping.</p>
+          <h2>Kondisi Hidrolik</h2>
         </div>
         <div class="panel-body" style="padding:0;">
           <div class="stat-grid">
-            <div class="stat">
-              <div class="stat-label">Konstanta resesi <span class="info-dot" role="button" tabindex="0" data-note="k = t_kal / ln(Qavg / Qmin) — dikalibrasi dari dua titik data debit real.">i</span></div>
-              <div class="stat-value" id="stat-k">—<span class="u">hari</span></div>
-            </div>
-            <div class="stat">
-              <div class="stat-label">Debit hasil resesi, Qf(t)</div>
-              <div class="stat-value" id="stat-Qf">—<span class="u">m³/s</span></div>
-            </div>
-            <div class="stat">
-              <div class="stat-label">Luas penampang, A</div>
-              <div class="stat-value" id="stat-A">—<span class="u">m²</span></div>
-            </div>
-            <div class="stat">
-              <div class="stat-label">Kecepatan air tawar, uf</div>
-              <div class="stat-value" id="stat-uf">—<span class="u">m/s</span></div>
-            </div>
+            <div class="stat"><div class="stat-label">Konstanta k</div><div class="stat-value" id="stat-k">—<span class="u">hari</span></div></div>
+            <div class="stat"><div class="stat-label">Debit Qf(t)</div><div class="stat-value" id="stat-Qf">—<span class="u">m³/s</span></div></div>
+            <div class="stat"><div class="stat-label">Luas A</div><div class="stat-value" id="stat-A">—<span class="u">m²</span></div></div>
+            <div class="stat"><div class="stat-label">Kecepatan uf</div><div class="stat-value" id="stat-uf">—<span class="u">m/s</span></div></div>
           </div>
         </div>
       </div>
 
       <div class="panel">
         <div class="panel-head">
-          <h2>Distribusi salinitas sepanjang sungai</h2>
-          <p>S(x) untuk tiga skenario dispersi, dari mulut sungai hingga 30&nbsp;km ke hulu.</p>
+          <h2>Distribusi Salinitas (S(x))</h2>
         </div>
         <div class="panel-body">
           <div class="chart-toolbar">
-            <span>Skala sumbu-Y</span>
             <div class="seg" id="scale-toggle">
               <button data-scale="linear" class="active">Linear</button>
               <button data-scale="log">Logaritmik</button>
@@ -707,11 +407,9 @@
           </div>
           <svg id="chart" viewBox="0 0 860 380" style="width:100%; height:auto; display:block;"></svg>
           <div class="legend-row" id="legend"></div>
-
           <div class="point-check">
-            <label for="pc-x" style="color:var(--ink-soft);">Cek salinitas pada jarak</label>
+            <label for="pc-x">Cek jarak (km):</label>
             <input type="number" id="pc-x" min="0" max="60" step="0.5" value="15">
-            <span style="color:var(--ink-soft);">km dari muara →</span>
             <div class="pc-results" id="pc-results"></div>
           </div>
         </div>
@@ -719,62 +417,20 @@
 
       <div class="panel">
         <div class="panel-head">
-          <h2>Rekap &amp; status terhadap ambang padi</h2>
-          <p>Salinitas dan status hasil sawah pada titik 10, 20, dan 30 km dari muara.</p>
+          <h2>Rekap Jarak</h2>
         </div>
         <div class="panel-body">
           <div class="table-scroll">
-            <table id="rekap-table" class="rtable">
+            <table class="rtable">
               <thead>
                 <tr>
-                  <th>Jarak dari muara</th>
-                  <th class="num">Rendah, D=<span class="d1-label">100</span></th>
-                  <th class="num">Sedang, D=<span class="d2-label">150</span></th>
-                  <th class="num">Kuat, D=<span class="d3-label">300</span></th>
+                  <th>Jarak</th>
+                  <th class="num">D=<span class="d1-label">100</span></th>
+                  <th class="num">D=<span class="d2-label">150</span></th>
+                  <th class="num">D=<span class="d3-label">300</span></th>
                 </tr>
               </thead>
               <tbody id="rekap-body"></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      <div class="panel">
-        <div class="panel-head">
-          <h2>Ambang toleransi salinitas air irigasi padi</h2>
-          <p>Acuan FAO / Maas-Hoffman.</p>
-        </div>
-        <div class="panel-body">
-          <ul class="threshold-list">
-            <li><span class="pill aman">Aman</span><span class="range">&lt; 1,3 ppt</span><span class="desc">Tidak ada penurunan hasil signifikan.</span></li>
-            <li><span class="pill turun">Penurunan hasil</span><span class="range">1,3–5 ppt</span><span class="desc">Hasil turun progresif seiring kenaikan salinitas.</span></li>
-            <li><span class="pill gagal">Gagal panen berisiko</span><span class="range">&gt; 5 ppt</span><span class="desc">Sangat berisiko gagal, terutama fase bibit &amp; pembungaan.</span></li>
-          </ul>
-        </div>
-      </div>
-
-      <div class="panel">
-        <div class="panel-head">
-          <h2>Perbandingan skenario durasi kemarau</h2>
-          <p>Titik t = 30 / 60 / 90 / 120 hari, dihitung independen dari slider "durasi tanpa hujan saat ini" di atas — untuk perbandingan cepat antar tingkat keparahan kemarau, memakai parameter dasar &amp; geometri saat ini.</p>
-        </div>
-        <div class="panel-body">
-          <div class="table-scroll">
-            <table id="compare-table" class="rtable">
-              <thead>
-                <tr>
-                  <th>t (hari)</th>
-                  <th class="num">Qf(t) m³/s</th>
-                  <th class="num">uf(t) m/s</th>
-                  <th class="num">S@10km D=<span class="d1-label">100</span></th>
-                  <th class="num">S@10km D=<span class="d2-label">150</span></th>
-                  <th class="num">S@10km D=<span class="d3-label">300</span></th>
-                  <th class="num">S@20km D=<span class="d1-label">100</span></th>
-                  <th class="num">S@20km D=<span class="d2-label">150</span></th>
-                  <th class="num">S@20km D=<span class="d3-label">300</span></th>
-                </tr>
-              </thead>
-              <tbody id="compare-body"></tbody>
             </table>
           </div>
         </div>
@@ -784,109 +440,32 @@
   </div>
 </main>
 
-<footer>
-  <div class="foot-line">
-    Model kalibrasi resesi baseflow eksponensial dari dua titik debit (Qavg, Qmin). Lebar dan kedalaman penampang adalah asumsi teknik, bukan hasil pengukuran lapangan — perbarui bila tersedia data cross-section aktual. Koefisien dispersi longitudinal (D) tidak terukur khusus untuk Sungai Walanae; tiga nilai di atas merepresentasikan rentang skenario rendah–sedang–kuat.
-  </div>
-</footer>
-
-<div id="info-bubble" role="tooltip"></div>
-
 <script>
 (function(){
   "use strict";
 
-  // ---------- tap/click-to-open info bubble ----------
-  (function setupInfoBubble(){
-    var bubble = document.getElementById("info-bubble");
-    var openDot = null;
-
-    function close(){
-      bubble.classList.remove("open");
-      openDot = null;
-    }
-
-    function openFor(dot){
-      bubble.textContent = dot.getAttribute("data-note") || "";
-      bubble.classList.add("open");
-      openDot = dot;
-
-      var r = dot.getBoundingClientRect();
-      var bw = Math.min(260, window.innerWidth - 24);
-      bubble.style.maxWidth = bw + "px";
-      var bh = bubble.offsetHeight;
-      var left = r.left + r.width/2 - bw/2;
-      left = Math.max(12, Math.min(left, window.innerWidth - bw - 12));
-      var top = r.bottom + 8;
-      if(top + bh > window.innerHeight - 8){ top = r.top - bh - 8; }
-      bubble.style.left = left + "px";
-      bubble.style.top = top + "px";
-      bubble.style.setProperty("--arrow-x", (r.left + r.width/2 - left - 4.5) + "px");
-    }
-
-    document.addEventListener("click", function(e){
-      var dot = e.target.closest(".info-dot");
-      if(dot){
-        if(openDot === dot){ close(); } else { openFor(dot); }
-        e.stopPropagation();
-        return;
-      }
-      if(!e.target.closest("#info-bubble")) close();
-    });
-
-    document.addEventListener("keydown", function(e){
-      if(e.key === "Escape"){ close(); return; }
-      if((e.key === "Enter" || e.key === " ") && document.activeElement && document.activeElement.classList.contains("info-dot")){
-        e.preventDefault();
-        var dot = document.activeElement;
-        if(openDot === dot){ close(); } else { openFor(dot); }
-      }
-    });
-
-    window.addEventListener("resize", close);
-    window.addEventListener("scroll", close, true);
-  })();
-
-  var state = {
-    S0: 30, Qavg: 138, Qmin: 15.8, tkal: 90, t: 100,
-    w: 80, d: 12, D1: 100, D2: 150, D3: 300
-  };
+  var state = { S0: 30, Qavg: 138, Qmin: 15.8, tkal: 90, t: 60, w: 80, d: 12, D1: 100, D2: 150, D3: 300 };
   var defaults = Object.assign({}, state);
   var yScale = "linear";
   var lastModel = null;
-
-  var resizeTimer;
-  window.addEventListener("resize", function(){
-    clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(function(){
-      if(lastModel) renderChart(lastModel);
-    }, 120);
-  });
+  var alertActive = false;
 
   var ids = ["S0","Qavg","Qmin","tkal","t","w","d","D1","D2","D3"];
-
   function bindField(key){
-    var range = document.getElementById("in-" + key);
-    var num = document.getElementById("num-" + key);
-    range.addEventListener("input", function(){
-      state[key] = parseFloat(range.value);
-      num.value = range.value;
-      onChange();
-    });
-    num.addEventListener("input", function(){
-      if(num.value === "") return;
-      var v = parseFloat(num.value);
-      if(isNaN(v)) return;
-      state[key] = v;
-      var rmin = parseFloat(range.min), rmax = parseFloat(range.max);
-      range.value = Math.min(Math.max(v, rmin), rmax);
-      onChange();
+    var r = document.getElementById("in-" + key), n = document.getElementById("num-" + key);
+    r.addEventListener("input", function(){ state[key] = parseFloat(r.value); n.value = r.value; onChange(); });
+    n.addEventListener("input", function(){
+      if(n.value === "") return;
+      var v = parseFloat(n.value);
+      if(!isNaN(v)){ state[key] = v; r.value = Math.min(Math.max(v, parseFloat(r.min)), parseFloat(r.max)); onChange(); }
     });
   }
   ids.forEach(bindField);
 
-  document.getElementById("reset-btn").addEventListener("click", function(){
+  document.getElementById("btn-reset").addEventListener("click", function(){
     Object.assign(state, defaults);
+    alertActive = false;
+    document.getElementById("status-panel").style.display = "none";
     ids.forEach(function(key){
       document.getElementById("in-" + key).value = state[key];
       document.getElementById("num-" + key).value = state[key];
@@ -895,282 +474,145 @@
   });
 
   document.getElementById("scale-toggle").addEventListener("click", function(e){
-    var btn = e.target.closest("button");
-    if(!btn) return;
-    yScale = btn.getAttribute("data-scale");
-    Array.prototype.forEach.call(this.querySelectorAll("button"), function(b){
-      b.classList.toggle("active", b === btn);
-    });
+    if(e.target.tagName !== "BUTTON") return;
+    yScale = e.target.getAttribute("data-scale");
+    Array.from(this.children).forEach(b => b.classList.toggle("active", b === e.target));
     onChange();
   });
 
   document.getElementById("pc-x").addEventListener("input", onChange);
 
-  // ---------- formatting ----------
-  function fmt(v, decimals){
-    if(!isFinite(v)) return "—";
-    if(Math.abs(v) >= 1000) return v.toFixed(0);
-    if(Math.abs(v) < 0.001 && v !== 0) return v.toExponential(2);
-    return v.toFixed(decimals == null ? 2 : decimals);
-  }
-  function fmtSal(v){
-    if(!isFinite(v)) return "—";
-    if(v >= 1) return v.toFixed(2);
-    if(v >= 0.001) return v.toFixed(4);
-    if(v === 0) return "0.00";
-    return v.toExponential(2);
-  }
   function statusOf(v){
     if(v < 1.3) return {cls:"aman", label:"Aman"};
     if(v <= 5) return {cls:"turun", label:"Penurunan hasil"};
-    return {cls:"gagal", label:"Gagal panen berisiko"};
+    return {cls:"gagal", label:"Gagal panen"};
   }
 
-  // ---------- core model ----------
   function compute(){
-    var s = state;
-    var k = s.tkal / Math.log(s.Qavg / s.Qmin);          
-    var Qf = s.Qavg * Math.exp(-s.t / k);                
-    var A = s.w * s.d;                                   
-    var uf = Qf / A;                                     
-    var Ds = [s.D1, s.D2, s.D3];
-    var kx = Ds.map(function(D){ return uf / D; });      
-
-    function salAt(distKm, kxVal){
-      return s.S0 * Math.exp(-kxVal * distKm * 1000);
-    }
-
-    return { k: k, Qf: Qf, A: A, uf: uf, Ds: Ds, kx: kx, salAt: salAt };
+    var k = state.tkal / Math.log(state.Qavg / state.Qmin);
+    var Qf = state.Qavg * Math.exp(-state.t / k);
+    var A = state.w * state.d;
+    var uf = Qf / A;
+    var Ds = [state.D1, state.D2, state.D3];
+    var kx = Ds.map(D => uf / D);
+    return { k: k, Qf: Qf, A: A, uf: uf, Ds: Ds, kx: kx, salAt: (dist, kxVal) => state.S0 * Math.exp(-kxVal * dist * 1000) };
   }
 
-  // ---------- render: stat cards ----------
-  function renderStats(m){
-    document.getElementById("stat-k").innerHTML = fmt(m.k, 1) + '<span class="u">hari</span>';
-    document.getElementById("stat-Qf").innerHTML = fmt(m.Qf, 2) + '<span class="u">m³/s</span>';
-    document.getElementById("stat-A").innerHTML = fmt(m.A, 0) + '<span class="u">m²</span>';
-    document.getElementById("stat-uf").innerHTML = fmt(m.uf, 5) + '<span class="u">m/s</span>';
-  }
+  function render(m){
+    document.getElementById("stat-k").innerHTML = m.k.toFixed(1) + '<span class="u">hari</span>';
+    document.getElementById("stat-Qf").innerHTML = m.Qf.toFixed(2) + '<span class="u">m³/s</span>';
+    document.getElementById("stat-A").innerHTML = m.A.toFixed(0) + '<span class="u">m²</span>';
+    document.getElementById("stat-uf").innerHTML = m.uf.toFixed(5) + '<span class="u">m/s</span>';
+    
+    ids.slice(7).forEach((k,i) => document.querySelectorAll(".d"+(i+1)+"-label").forEach(el => el.textContent = state[k]));
 
-  // ---------- render: d-labels in table headers ----------
-  function renderDLabels(){
-    Array.prototype.forEach.call(document.querySelectorAll(".d1-label"), function(el){ el.textContent = state.D1; });
-    Array.prototype.forEach.call(document.querySelectorAll(".d2-label"), function(el){ el.textContent = state.D2; });
-    Array.prototype.forEach.call(document.querySelectorAll(".d3-label"), function(el){ el.textContent = state.D3; });
-  }
-
-  // ---------- render: chart ----------
-  var COLORS = ["#4d92a0", "#b4801f", "#a8431e"];
-  var LABELS = ["Dispersi rendah", "Dispersi sedang", "Tercampur kuat"];
-  var MAXKM = 30;
-
-  function renderChart(m){
-    lastModel = m;
-    var svg = document.getElementById("chart");
-    var containerWidth = svg.clientWidth || (svg.parentElement && svg.parentElement.clientWidth) || 800;
-    var W = Math.max(Math.round(containerWidth), 260);
-    var small = W < 480;
-    var H = Math.round(W * (small ? 0.72 : 0.44));
-    var padL = small ? 40 : 54;
-    var padR = small ? 10 : 18;
-    var padT = 14;
-    var padB = small ? 28 : 36;
-    var plotW = W - padL - padR, plotH = H - padT - padB;
-    var xTickStep = small ? 10 : 5;
-
-    svg.setAttribute("viewBox", "0 0 " + W + " " + H);
-
-    var maxY = state.S0;
-    var minYForLog = 0.01;
-
-    function yToPix(v){
-      if(yScale === "log"){
-        var vv = Math.max(v, minYForLog);
-        var logMax = Math.log10(maxY);
-        var logMin = Math.log10(minYForLog);
-        var t = (Math.log10(vv) - logMin) / (logMax - logMin);
-        return padT + (1 - t) * plotH;
-      }
-      var t2 = v / maxY;
-      return padT + (1 - Math.min(Math.max(t2,0),1)) * plotH;
-    }
-    function xToPix(km){ return padL + (km / MAXKM) * plotW; }
-
-    var svgParts = [];
-    var yTicks;
-    if(yScale === "log"){
-      yTicks = [0.01, 0.1, 1, 5, 10, maxY];
-    } else {
-      yTicks = [];
-      for(var i=0;i<=5;i++){ yTicks.push(+(maxY * i/5).toFixed(2)); }
-    }
-    yTicks.forEach(function(v){
-      var py = yToPix(v);
-      svgParts.push('<line x1="'+padL+'" y1="'+py+'" x2="'+(W-padR)+'" y2="'+py+'" stroke="#e2e7dc" stroke-width="1"/>');
-      svgParts.push('<text x="'+(padL-8)+'" y="'+(py+4)+'" text-anchor="end" font-size="11" fill="#7c8a80" font-family="ui-monospace,monospace">'+ (v>=1? v.toFixed(v>=10?0:1) : v) +'</text>');
-    });
-
-    for(var kmT=0; kmT<=MAXKM; kmT+=xTickStep){
-      var px = xToPix(kmT);
-      svgParts.push('<line x1="'+px+'" y1="'+padT+'" x2="'+px+'" y2="'+(H-padB)+'" stroke="#eef1ea" stroke-width="1"/>');
-      svgParts.push('<text x="'+px+'" y="'+(H-padB+18)+'" text-anchor="middle" font-size="11" fill="#7c8a80" font-family="ui-monospace,monospace">'+kmT+'</text>');
-    }
-    svgParts.push('<text x="'+(padL+plotW/2)+'" y="'+(H-4)+'" text-anchor="middle" font-size="11.5" fill="#52605f">Jarak dari muara (km)</text>');
-
-    [1.3, 5].forEach(function(th){
-      if(th > maxY && yScale!=="log") return;
-      var py = yToPix(th);
-      svgParts.push('<line x1="'+padL+'" y1="'+py+'" x2="'+(W-padR)+'" y2="'+py+'" stroke="#97a394" stroke-width="1.2" stroke-dasharray="4 4"/>');
-      svgParts.push('<text x="'+(W-padR-4)+'" y="'+(py-4)+'" text-anchor="end" font-size="10.5" fill="#7c8a80">'+ th +' ppt</text>');
-    });
-
-    svgParts.push('<line x1="'+padL+'" y1="'+padT+'" x2="'+padL+'" y2="'+(H-padB)+'" stroke="#c7cec0" stroke-width="1"/>');
-    svgParts.push('<line x1="'+padL+'" y1="'+(H-padB)+'" x2="'+(W-padR)+'" y2="'+(H-padB)+'" stroke="#c7cec0" stroke-width="1"/>');
-
-    var steps = 120;
-    m.kx.forEach(function(kxVal, idx){
-      var pts = [];
-      for(var i=0;i<=steps;i++){
-        var km = MAXKM * i/steps;
-        var val = m.salAt(km, kxVal);
-        pts.push(xToPix(km) + "," + yToPix(val).toFixed(2));
-      }
-      svgParts.push('<polyline points="'+pts.join(" ")+'" fill="none" stroke="'+COLORS[idx]+'" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>');
-    });
-
-    svg.innerHTML = svgParts.join("");
-
-    var legend = document.getElementById("legend");
-    legend.innerHTML = LABELS.map(function(lab, idx){
-      return '<span><span class="swatch" style="background:'+COLORS[idx]+'"></span>'+lab+' (D='+m.Ds[idx]+')</span>';
-    }).join("") + '<span><span class="swatch dash"></span>Ambang 1,3 &amp; 5 ppt</span>';
-  }
-
-  // ---------- render: point check ----------
-  function renderPointCheck(m){
-    var kmVal = parseFloat(document.getElementById("pc-x").value);
-    var box = document.getElementById("pc-results");
-    if(isNaN(kmVal) || kmVal < 0){ box.innerHTML = ""; return; }
-    box.innerHTML = m.kx.map(function(kxVal, idx){
-      var v = m.salAt(kmVal, kxVal);
-      var st = statusOf(v);
-      return '<span class="pc-chip pill ' + st.cls + '">' + LABELS[idx].replace("Dispersi ","").replace("Tercampur ","") + ': ' + fmtSal(v) + ' ppt</span>';
+    var kmVal = parseFloat(document.getElementById("pc-x").value) || 0;
+    document.getElementById("pc-results").innerHTML = m.kx.map((kxVal, i) => {
+      var v = m.salAt(kmVal, kxVal), st = statusOf(v);
+      return `<span class="pc-chip pill ${st.cls}">D=${m.Ds[i]}: ${v.toFixed(2)} ppt</span>`;
     }).join("");
-  }
 
-  // ---------- render: rekap table ----------
-  var REKAP_KM = [10, 20, 30];
-  var REKAP_LABELS = ["Rendah", "Sedang", "Kuat"];
-  function renderRekap(m){
-    var body = document.getElementById("rekap-body");
-    body.innerHTML = REKAP_KM.map(function(km){
-      var cells = m.kx.map(function(kxVal, idx){
-        var v = m.salAt(km, kxVal);
-        var st = statusOf(v);
-        var label = REKAP_LABELS[idx] + ", D=" + m.Ds[idx];
-        return '<td class="num" data-label="' + label + '"><span class="val-wrap">' +
-          fmtSal(v) + ' ppt<span class="pill ' + st.cls + '">' + st.label + '</span>' +
-          '</span></td>';
+    document.getElementById("rekap-body").innerHTML = [10, 20, 30].map(km => {
+      var cells = m.kx.map((kxVal, i) => {
+        var v = m.salAt(km, kxVal), st = statusOf(v);
+        return `<td class="num"><span class="val-wrap">${v.toFixed(2)} ppt<span class="pill ${st.cls}">${st.label}</span></span></td>`;
       }).join("");
-      return '<tr><td>' + km + ' km</td>' + cells + '</tr>';
+      return `<tr><td>${km} km</td>${cells}</tr>`;
     }).join("");
+    
+    drawChart(m);
   }
 
-  // ---------- render: comparison table ----------
-  var COMPARE_T = [30, 60, 90, 120];
-  var COMPARE_DLABELS = ["D=100", "D=150", "D=300"];
-  function renderCompare(m){
-    var body = document.getElementById("compare-body");
-    COMPARE_DLABELS = m.Ds.map(function(D){ return "D=" + D; });
-    body.innerHTML = COMPARE_T.map(function(t){
-      var Qf = state.Qavg * Math.exp(-t / m.k);
-      var uf = Qf / m.A;
-      var kxs = m.Ds.map(function(D){ return uf / D; });
-      var s10 = kxs.map(function(kxVal){ return state.S0 * Math.exp(-kxVal * 10000); });
-      var s20 = kxs.map(function(kxVal){ return state.S0 * Math.exp(-kxVal * 20000); });
-      var row = '<tr><td>' + t + ' hari</td>' +
-        '<td class="num" data-label="Qf(t) m³/s">' + fmt(Qf,2) + '</td>' +
-        '<td class="num" data-label="uf(t) m/s">' + fmt(uf,5) + '</td>' +
-        s10.map(function(v, idx){ return '<td class="num" data-label="S@10km ' + COMPARE_DLABELS[idx] + '">' + fmtSal(v) + ' ppt</td>'; }).join("") +
-        s20.map(function(v, idx){ return '<td class="num" data-label="S@20km ' + COMPARE_DLABELS[idx] + '">' + fmtSal(v) + ' ppt</td>'; }).join("") +
-        '</tr>';
-      return row;
-    }).join("");
+  function drawChart(m){
+    var svg = document.getElementById("chart"), W = svg.clientWidth || 800, H = W * 0.44;
+    svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+    var pad = {l: 54, r: 18, t: 14, b: 36}, pW = W - pad.l - pad.r, pH = H - pad.t - pad.b;
+    var yToP = v => yScale === "log" ? pad.t + (1 - (Math.log10(Math.max(v, 0.01)) - Math.log10(0.01))/(Math.log10(state.S0) - Math.log10(0.01))) * pH : pad.t + (1 - Math.min(Math.max(v/state.S0,0),1)) * pH;
+    var xToP = km => pad.l + (km / 30) * pW;
+    
+    var pts = m.kx.map(kxV => Array.from({length: 60}, (_,i) => `${xToP(i*0.5)},${yToP(m.salAt(i*0.5, kxV)).toFixed(1)}`).join(" "));
+    var cols = ["#4d92a0", "#b4801f", "#a8431e"];
+    
+    svg.innerHTML = `
+      ${ [0, 5, 10, 15, 20, 25, 30].map(x => `<line x1="${xToP(x)}" y1="${pad.t}" x2="${xToP(x)}" y2="${H-pad.b}" stroke="#eef1ea"/><text x="${xToP(x)}" y="${H-pad.b+18}" text-anchor="middle" font-size="11" fill="#7c8a80">${x}</text>`).join("") }
+      ${ (yScale==="log"? [0.01,0.1,1,5,10,state.S0] : [0, state.S0*0.5, state.S0]).map(y => `<line x1="${pad.l}" y1="${yToP(y)}" x2="${W-pad.r}" y2="${yToP(y)}" stroke="#e2e7dc"/><text x="${pad.l-8}" y="${yToP(y)+4}" text-anchor="end" font-size="11" fill="#7c8a80">${y}</text>`).join("") }
+      ${ [1.3, 5].filter(th=>th<=state.S0 || yScale==="log").map(th => `<line x1="${pad.l}" y1="${yToP(th)}" x2="${W-pad.r}" y2="${yToP(th)}" stroke="#97a394" stroke-dasharray="4 4"/><text x="${W-pad.r-4}" y="${yToP(th)-4}" text-anchor="end" font-size="10.5" fill="#7c8a80">${th} ppt</text>`).join("") }
+      ${ pts.map((p,i) => `<polyline points="${p}" fill="none" stroke="${cols[i]}" stroke-width="2.4"/>`).join("") }
+      <rect x="${pad.l}" y="${pad.t}" width="${pW}" height="${pH}" fill="none" stroke="#c7cec0"/>
+    `;
+    document.getElementById("legend").innerHTML = m.Ds.map((d,i) => `<span><span class="swatch" style="background:${cols[i]}"></span>D=${d}</span>`).join("") + `<span><span class="swatch dash"></span>Ambang</span>`;
   }
 
-  // ---------- API Sync Open-Meteo (Opsi A) ----------
-  const LAT = -4.14; 
-  const LON = 120.03;
+  function onChange(){
+    document.querySelectorAll('[id^="val-"]').forEach(el => {
+      var k = el.id.replace("val-", ""); if(state[k]!==undefined) el.textContent = state[k];
+    });
+    render(compute());
+  }
 
-  async function syncCuaca() {
-    var btn = document.getElementById("btn-sync");
-    var oldText = btn.textContent;
-    btn.textContent = "Mengambil data...";
-    btn.disabled = true;
+  // --- API LOGIC ---
+  const LAT = -4.14, LON = 120.03;
+
+  document.getElementById("btn-sync").addEventListener("click", async function(){
+    var btn = this, oldText = btn.textContent;
+    btn.textContent = "Mengambil data..."; btn.disabled = true;
+    try {
+      var res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&past_days=90&forecast_days=1&daily=precipitation_sum&timezone=auto`);
+      var rain = (await res.json()).daily.precipitation_sum, t = 0;
+      for (var i = rain.length - 2; i >= 0; i--) { if (rain[i] !== null && rain[i] < 2.0) t++; else break; }
+      state.t = t; document.getElementById("in-t").value = t; document.getElementById("num-t").value = t;
+      onChange();
+      btn.textContent = `Hujan: ${t} hari kemarau`;
+    } catch(e) { btn.textContent = "Gagal"; }
+    setTimeout(() => { btn.textContent = oldText; btn.disabled = false; }, 3000);
+  });
+
+  document.getElementById("btn-tide").addEventListener("click", async function(){
+    var btn = this, oldText = btn.textContent;
+    btn.textContent = "Menganalisis..."; btn.disabled = true;
+    
+    // Algoritma Lunar Age (Fase Bulan) 0-29 hari
+    var d = new Date(), c = d.getFullYear() * 365.25 + (d.getMonth() + 1) * 30.6 + d.getDate() - 694039.09;
+    var lunarAge = Math.round((c / 29.5305882 - parseInt(c / 29.5305882)) * 29.53);
+    var isSpringTide = (lunarAge <= 3 || lunarAge >= 27 || (lunarAge >= 13 && lunarAge <= 17));
 
     try {
-      var url = "https://api.open-meteo.com/v1/forecast?latitude=" + LAT + "&longitude=" + LON + "&past_days=90&forecast_days=1&daily=precipitation_sum&timezone=auto";
-      var response = await fetch(url);
-      var data = await response.json();
+      var res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&current_weather=true`);
+      var wind = (await res.json()).current_weather;
+      // Asumsi angin dari laut ke darat (menambah dorongan estuari)
+      var inlandWind = (wind.winddirection > 45 && wind.winddirection < 135 && wind.windspeed > 10);
       
-      var rainData = data.daily.precipitation_sum;
-      var hariTanpaHujan = 0;
-      
-      for (var i = rainData.length - 2; i >= 0; i--) {
-        if (rainData[i] !== null && rainData[i] < 2.0) {
-          hariTanpaHujan++;
-        } else {
-          break; 
-        }
+      var panel = document.getElementById("status-panel");
+      var title = document.getElementById("status-title");
+      var text = document.getElementById("status-text");
+      panel.style.display = "block";
+      panel.className = "panel";
+
+      if(isSpringTide && state.t >= 60) {
+        // Bahaya Kritis
+        state.D1 = 300; state.D2 = 300; state.D3 = 300; // Kunci ke dispersi maksimal
+        panel.classList.add("status-darurat");
+        title.textContent = "STATUS DARURAT: PASANG PURNAMA";
+        text.innerHTML = `Fase bulan saat ini memicu dorongan arus laut maksimal, diperparah debit kritis. Model dipaksa menggunakan dispersi ekstrem (D=300).`;
+      } else if (isSpringTide || inlandWind) {
+        panel.classList.add("status-waspada");
+        title.textContent = "STATUS WASPADA";
+        text.innerHTML = `Terdeteksi ${isSpringTide ? 'dorongan pasang tinggi' : 'angin laut kuat'}. Hindari sedot air pada siang hari. Pantau kejernihan sungai secara visual.`;
+      } else {
+        panel.classList.add("status-aman");
+        title.textContent = "STATUS AMAN (PASANG PERBANI)";
+        text.innerHTML = `Fase dorongan laut lemah. Kondisi optimal untuk memaksimalkan jam operasional pompa irigasi di area Manurung.`;
       }
       
-      state.t = hariTanpaHujan;
-      document.getElementById("in-t").value = hariTanpaHujan;
-      document.getElementById("num-t").value = hariTanpaHujan;
-      
-      onChange(); 
-      
-      btn.textContent = "Sinkronisasi Sukses (" + hariTanpaHujan + " hari tanpa hujan)";
-      setTimeout(function() { btn.textContent = oldText; btn.disabled = false; }, 3000);
-      
-    } catch (error) {
-      console.error("Gagal sinkronisasi data cuaca:", error);
-      btn.textContent = "Gagal mengambil data";
-      setTimeout(function() { btn.textContent = oldText; btn.disabled = false; }, 3000);
-    }
-  }
-
-  document.getElementById("btn-sync").addEventListener("click", syncCuaca);
-
-  // ---------- master update ----------
-  function onChange(){
-    if(state.Qmin >= state.Qavg){
-      state.Qmin = +(state.Qavg - 0.1).toFixed(1);
-      document.getElementById("in-Qmin").value = state.Qmin;
-      document.getElementById("num-Qmin").value = state.Qmin;
-    }
-    document.getElementById("val-S0").textContent = state.S0;
-    document.getElementById("val-Qavg").textContent = state.Qavg;
-    document.getElementById("val-Qmin").textContent = state.Qmin;
-    document.getElementById("val-tkal").textContent = state.tkal;
-    document.getElementById("val-t").textContent = state.t;
-    document.getElementById("val-w").textContent = state.w;
-    document.getElementById("val-d").textContent = state.d;
-    document.getElementById("val-D1").textContent = state.D1;
-    document.getElementById("val-D2").textContent = state.D2;
-    document.getElementById("val-D3").textContent = state.D3;
-
-    var m = compute();
-    renderStats(m);
-    renderDLabels();
-    renderChart(m);
-    renderPointCheck(m);
-    renderRekap(m);
-    renderCompare(m);
-  }
+      ids.forEach(k => { document.getElementById("in-" + k).value = state[k]; document.getElementById("num-" + k).value = state[k]; });
+      onChange();
+      btn.textContent = "Analisis Selesai";
+    } catch(e) { btn.textContent = "Gagal Akses Data"; }
+    setTimeout(() => { btn.textContent = oldText; btn.disabled = false; }, 4000);
+  });
 
   onChange();
 })();
 </script>
-
 </body>
 </html>
