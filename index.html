@@ -166,20 +166,6 @@
     font-style: italic;
     color: var(--ink-soft);
   }
-  .info-dot{
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 14px; height: 14px;
-    border-radius: 50%;
-    border: 1px solid #b9c4b7;
-    color: var(--ink-soft);
-    font-size: 10px;
-    font-family: var(--serif);
-    font-style: italic;
-    cursor: help;
-    flex: none;
-  }
   .field-value{
     font-family: var(--mono);
     font-size: 13.5px;
@@ -224,9 +210,7 @@
     transition: all 0.2s;
   }
   .btn-sync { background: #e7f0e0; border-color: #4c7a3d; color: #4c7a3d; }
-  .btn-tide { background: #e0f2fe; border-color: #0284c7; color: #0284c7; }
   .btn-reset { margin-top: 18px; color: var(--ink-soft); }
-
   .action-btn:disabled { opacity: 0.6; cursor: wait; }
 
   /* ---------- Warning Banner ---------- */
@@ -235,6 +219,7 @@
   .status-waspada { background: var(--amber-bg); border-color: var(--amber); color: #825b12; }
   .status-aman { background: var(--paddy-bg); border-color: var(--paddy); color: var(--paddy); }
   .status-title { font-family: var(--sans); font-size: 16px; font-weight: 600; margin: 0 0 4px; text-transform: uppercase; }
+  .status-time { display: block; font-size: 12px; font-family: var(--mono); margin-top: 8px; opacity: 0.8; }
 
   /* ---------- Stat readout ---------- */
   .stat-grid{
@@ -248,7 +233,7 @@
   .stat-value{ font-family: var(--mono); font-size: 22px; color: var(--river-deep); line-height: 1.1; }
   .stat-value .u{ font-size: 13px; color: var(--ink-soft); margin-left: 3px; }
 
-  /* ---------- Chart & Tables (Singkat) ---------- */
+  /* ---------- Chart & Tables ---------- */
   .chart-toolbar{ display: flex; align-items: center; justify-content: flex-end; gap: 14px; margin-bottom: 8px; font-size: 12.5px; color: var(--ink-soft); }
   .seg{ display: inline-flex; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
   .seg button{ border: none; background: #fff; padding: 5px 10px; font-size: 12.5px; cursor: pointer; color: var(--ink-soft); }
@@ -300,10 +285,9 @@
       </div>
       <div class="panel-body">
 
-        <!-- Tombol Sinkronisasi (Hanya Tulisan) -->
+        <!-- Tombol Sinkronisasi Server GAS (Hanya Tulisan) -->
         <div class="btn-group">
-          <button id="btn-sync" class="action-btn btn-sync">Sinkronisasi Data Cuaca (Hujan)</button>
-          <button id="btn-tide" class="action-btn btn-tide">Analisis Pasang Surut & Angin</button>
+          <button id="btn-sync" class="action-btn btn-sync">Sinkronisasi Data Server Terkini</button>
         </div>
 
         <div class="field primary" id="field-t">
@@ -372,7 +356,7 @@
     <!-- KANAN: HASIL -->
     <div id="results-col">
 
-      <!-- PANEL STATUS DINAMIS -->
+      <!-- PANEL STATUS DINAMIS DARI GOOGLE APPS SCRIPT -->
       <div class="panel" id="status-panel">
         <div class="panel-body" style="padding: 16px;">
           <h2 id="status-title" class="status-title">STATUS POMPANISASI</h2>
@@ -447,8 +431,6 @@
   var state = { S0: 30, Qavg: 138, Qmin: 15.8, tkal: 90, t: 60, w: 80, d: 12, D1: 100, D2: 150, D3: 300 };
   var defaults = Object.assign({}, state);
   var yScale = "linear";
-  var lastModel = null;
-  var alertActive = false;
 
   var ids = ["S0","Qavg","Qmin","tkal","t","w","d","D1","D2","D3"];
   function bindField(key){
@@ -464,7 +446,6 @@
 
   document.getElementById("btn-reset").addEventListener("click", function(){
     Object.assign(state, defaults);
-    alertActive = false;
     document.getElementById("status-panel").style.display = "none";
     ids.forEach(function(key){
       document.getElementById("in-" + key).value = state[key];
@@ -550,65 +531,68 @@
     render(compute());
   }
 
-  // --- API LOGIC ---
-  const LAT = -4.14, LON = 120.03;
+  // --- API LOGIC (Google Apps Script) ---
+  const URL_GAS = "https://script.google.com/macros/s/AKfycbwgGgV73Cp_-thQ6ymUq5X1RiPxTXHLHvZRGc5V2bFITRGYjobpdlr3LZGhyRybucK4/exec";
 
   document.getElementById("btn-sync").addEventListener("click", async function(){
     var btn = this, oldText = btn.textContent;
-    btn.textContent = "Mengambil data..."; btn.disabled = true;
-    try {
-      var res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&past_days=90&forecast_days=1&daily=precipitation_sum&timezone=auto`);
-      var rain = (await res.json()).daily.precipitation_sum, t = 0;
-      for (var i = rain.length - 2; i >= 0; i--) { if (rain[i] !== null && rain[i] < 2.0) t++; else break; }
-      state.t = t; document.getElementById("in-t").value = t; document.getElementById("num-t").value = t;
-      onChange();
-      btn.textContent = `Hujan: ${t} hari kemarau`;
-    } catch(e) { btn.textContent = "Gagal"; }
-    setTimeout(() => { btn.textContent = oldText; btn.disabled = false; }, 3000);
-  });
-
-  document.getElementById("btn-tide").addEventListener("click", async function(){
-    var btn = this, oldText = btn.textContent;
-    btn.textContent = "Menganalisis..."; btn.disabled = true;
+    btn.textContent = "Mengambil data harian..."; 
+    btn.disabled = true;
     
-    // Algoritma Lunar Age (Fase Bulan) 0-29 hari
-    var d = new Date(), c = d.getFullYear() * 365.25 + (d.getMonth() + 1) * 30.6 + d.getDate() - 694039.09;
-    var lunarAge = Math.round((c / 29.5305882 - parseInt(c / 29.5305882)) * 29.53);
-    var isSpringTide = (lunarAge <= 3 || lunarAge >= 27 || (lunarAge >= 13 && lunarAge <= 17));
-
     try {
-      var res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&current_weather=true`);
-      var wind = (await res.json()).current_weather;
-      // Asumsi angin dari laut ke darat (menambah dorongan estuari)
-      var inlandWind = (wind.winddirection > 45 && wind.winddirection < 135 && wind.windspeed > 10);
+      var res = await fetch(URL_GAS);
+      var data = await res.json();
+      
+      // Jika server membalas pesan error (seperti "Data belum tersedia")
+      if(data.error) {
+        alert("Server merespons: " + data.error + "\nPastikan Pemicu (Trigger) di Apps Script sudah berjalan setidaknya satu kali.");
+        throw new Error(data.error);
+      }
+
+      // Update parameter dari server
+      state.t = data.hari_tanpa_hujan; 
+      document.getElementById("in-t").value = state.t; 
+      document.getElementById("num-t").value = state.t;
       
       var panel = document.getElementById("status-panel");
       var title = document.getElementById("status-title");
       var text = document.getElementById("status-text");
+      
       panel.style.display = "block";
-      panel.className = "panel";
+      panel.className = "panel"; 
 
-      if(isSpringTide && state.t >= 60) {
-        // Bahaya Kritis
-        state.D1 = 300; state.D2 = 300; state.D3 = 300; // Kunci ke dispersi maksimal
+      // Waktu Pembaruan Terakhir
+      var dateUpdate = new Date(data.terakhir_diperbarui).toLocaleString('id-ID');
+      var footNote = `<span class="status-time">Diperbarui oleh satelit pada: ${dateUpdate}</span>`;
+
+      // Logika Status Berdasarkan Data Harian
+      // Asumsi pasang di atas 1.5 meter = pasang kuat (ekstrem) untuk estuari ini
+      var maxTideNum = Number(data.max_tide_meter) || 0;
+      
+      if(maxTideNum >= 1.5 && state.t >= 60) {
+        state.D1 = 300; state.D2 = 300; state.D3 = 300; // Kunci ke kondisi tercampur kuat
         panel.classList.add("status-darurat");
-        title.textContent = "STATUS DARURAT: PASANG PURNAMA";
-        text.innerHTML = `Fase bulan saat ini memicu dorongan arus laut maksimal, diperparah debit kritis. Model dipaksa menggunakan dispersi ekstrem (D=300).`;
-      } else if (isSpringTide || inlandWind) {
+        title.textContent = "STATUS DARURAT: PASANG EKSTREM";
+        text.innerHTML = `Tinggi pasang laut hari ini mencapai <b>${maxTideNum.toFixed(2)} meter</b> dengan debit air tawar kritis. Segera matikan operasional pompa irigasi. Simulasi dipaksa menggunakan dispersi ekstrem (D=300). ${footNote}`;
+      } else if (data.angin_laut_aktif) {
         panel.classList.add("status-waspada");
-        title.textContent = "STATUS WASPADA";
-        text.innerHTML = `Terdeteksi ${isSpringTide ? 'dorongan pasang tinggi' : 'angin laut kuat'}. Hindari sedot air pada siang hari. Pantau kejernihan sungai secara visual.`;
+        title.textContent = "STATUS WASPADA (ANGIN LAUT KUAT)";
+        text.innerHTML = `Terdeteksi angin dominan dari arah laut. Intrusi salinitas dapat terdorong lebih jauh dari estimasi model. Batasi jam sedot air. ${footNote}`;
       } else {
         panel.classList.add("status-aman");
-        title.textContent = "STATUS AMAN (PASANG PERBANI)";
-        text.innerHTML = `Fase dorongan laut lemah. Kondisi optimal untuk memaksimalkan jam operasional pompa irigasi di area Manurung.`;
+        title.textContent = "STATUS AMAN";
+        text.innerHTML = `Ketinggian pasang normal (max ${maxTideNum.toFixed(2)} m) dan arah angin aman. Pemompaan dapat dimaksimalkan berdasarkan batas jarak harian. ${footNote}`;
       }
       
       ids.forEach(k => { document.getElementById("in-" + k).value = state[k]; document.getElementById("num-" + k).value = state[k]; });
       onChange();
-      btn.textContent = "Analisis Selesai";
-    } catch(e) { btn.textContent = "Gagal Akses Data"; }
-    setTimeout(() => { btn.textContent = oldText; btn.disabled = false; }, 4000);
+      btn.textContent = `Update Selesai (${state.t} hari kemarau)`;
+      
+    } catch(e) { 
+      console.error(e);
+      btn.textContent = "Gagal terhubung ke server"; 
+    }
+    setTimeout(() => { btn.textContent = oldText; btn.disabled = false; }, 5000);
   });
 
   onChange();
