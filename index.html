@@ -217,15 +217,28 @@
 
   function render(){
     var k = 90 / Math.log(state.Qavg / state.Qmin);
+    // Floor pada Qmin: model resesi eksponensial dikalibrasi supaya Q(90)=Qmin.
     var Qt = Math.max(state.Qmin, state.Qavg * Math.exp(-state.t / k));
     var uf = Qt / (state.w * state.d);
     
-    var currentD = window.customActiveD || 100;
+    var currentD = window.customActiveD || 100; 
     
-    document.getElementById("rekap-body").innerHTML = [10, 15, 20, 25, 30].map(km => {
-      var sal = state.S0 * Math.exp(-(uf / currentD) * km * 1000);
+    // Daftar titik jarak pompa beserta nama wilayah/pos pantau riil
+    var titikPompa = [
+      { km: 10, nama: "Cenrana" },
+      { km: 15, nama: "Kampoti" },
+      { km: 20, nama: "Uloe" },
+      { km: 25, nama: "Pallabessi" },
+      { km: 30, nama: "Solo" }
+    ];
+
+    document.getElementById("rekap-body").innerHTML = titikPompa.map(p => {
+      var sal = state.S0 * Math.exp(-(uf / currentD) * p.km * 1000);
       var st = statusOf(sal);
-      return `<tr><td><b>${km} km</b></td><td class="num">${sal.toFixed(2)} ppt <span class="pill ${st.cls}" style="margin-left:6px">${st.label}</span></td></tr>`;
+      return `<tr>
+                <td><b>${p.km} km</b> <span style="font-size:12px; color:var(--ink-soft); display:block;">(${p.nama})</span></td>
+                <td class="num">${sal.toFixed(2)} ppt <span class="pill ${st.cls}" style="margin-left:6px">${st.label}</span></td>
+              </tr>`;
     }).join("");
   }
 
