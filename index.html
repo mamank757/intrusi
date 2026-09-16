@@ -75,6 +75,7 @@
   th, td{ text-align: left; padding: 10px 8px; border-bottom: 1px solid var(--line); }
   th{ font-weight: 600; color: var(--ink-soft); background: #f4f6f0; }
   td.num, th.num{ text-align: right; font-family: var(--mono); }
+  .table-caption{ font-size: 11.5px; color: var(--ink-soft); padding: 8px 16px 12px; margin: 0; line-height: 1.4; }
   
   .pill{ display: inline-block; padding: 3px 8px; border-radius: 20px; font-size: 11.5px; font-weight: 500; white-space: nowrap; }
   .pill.aman{ background: var(--paddy-bg); color: var(--paddy); }
@@ -89,6 +90,7 @@
     input[type="number"]{ width: 62px; font-size: 16px; }
   }
 </style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 </head>
 <body>
 
@@ -113,7 +115,7 @@
         <div class="field primary" id="field-t">
           <div class="field-top"><span class="field-label">Durasi Tanpa Hujan <span class="sym">t</span></span><span class="field-value"><span id="val-t">60</span> hr</span></div>
           <div class="field-row"><input type="range" id="in-t" min="0" max="200" step="1" value="60"><input type="number" id="num-t" value="60"></div>
-          <p class="field-note">Debit dibatasi (floor) pada Qmin untuk t &gt; 90 hari — model resesi tidak diekstrapolasi tanpa batas ke bawah baseflow minimum.</p>
+          <p class="field-note" id="t-detail">Debit dibatasi (floor) pada Qmin untuk t &gt; 90 hari — model resesi tidak diekstrapolasi tanpa batas ke bawah baseflow minimum.</p>
         </div>
 
         <div class="field">
@@ -176,6 +178,20 @@
         </div>
       </div>
 
+      <!-- PETA SUNGAI ASLI (OpenStreetMap) — PAPARAN SALINITAS REALTIME -->
+      <div class="panel">
+        <div class="panel-head"><h2>Peta Sungai — Paparan Salinitas Realtime</h2></div>
+        <div class="panel-body">
+          <div id="leaflet-map" style="width:100%; height:340px; border-radius:4px; overflow:hidden;"></div>
+          <div style="display:flex; gap:16px; flex-wrap:wrap; margin-top:8px; font-size:12px; color:var(--ink-soft);">
+            <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--paddy);margin-right:4px;"></span>Aman</span>
+            <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--amber);margin-right:4px;"></span>Turun Hasil</span>
+            <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--clay);margin-right:4px;"></span>Gagal Panen</span>
+          </div>
+          <p class="table-caption" style="padding:8px 0 0;">Peta memakai ubin OpenStreetMap asli, jadi bentuk alur sungai mengikuti garis sungai sesungguhnya (bukan gambar skematik). Jarak km pada label titik tetap berupa garis lurus dari titik pasang surut muara, dipakai sebagai input model — bukan jarak alur sungai. Titik "Pallabessi" pada versi sebelumnya dihapus karena tidak ditemukan bukti lokasinya di DAS Walanae; satu-satunya "Pallabessi" yang terverifikasi justru di pesisir barat (Pinrang). Untuk pemakaian dengan trafik tinggi, ganti tile OpenStreetMap gratis ini dengan penyedia ubin berbayar (mis. MapTiler/Stadia Maps) sesuai kebijakan pemakaian wajar OSM.</p>
+        </div>
+      </div>
+
       <!-- TABEL REKAP -->
       <div class="panel">
         <div class="panel-head"><h2>Tabel Salinitas Titik Pompa</h2></div>
@@ -186,6 +202,7 @@
               <tbody id="rekap-body"></tbody>
             </table>
           </div>
+          <p class="table-caption">Jarak berupa garis lurus dari titik pasang surut muara (lihat peta di atas), bukan jarak alur sungai riil. Verifikasi dengan GIS/peta topografi sebelum dipakai sebagai acuan operasional pompa.</p>
         </div>
       </div>
 
@@ -193,6 +210,7 @@
   </div>
 </main>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script>
 (function(){
   "use strict";
@@ -223,23 +241,76 @@
     
     var currentD = window.customActiveD || 100; 
     
-    // Daftar titik jarak pompa beserta nama wilayah/pos pantau riil
+    // Titik pompa dengan koordinat & jarak garis-lurus TERVERIFIKASI (Google
+    // Places) dari titik pasang surut muara. Pallabessi dihapus (lihat
+    // catatan di bawah peta) karena tidak terverifikasi berada di DAS Walanae.
     var titikPompa = [
-      { km: 10, nama: "Cenrana" },
-      { km: 15, nama: "Kampoti" },
-      { km: 20, nama: "Uloe" },
-      { km: 25, nama: "Pallabessi" },
-      { km: 30, nama: "Solo" }
+      { id: "cenrana", km: 8, nama: "Cenrana", lat: -4.3304404, lon: 120.3228299 },
+      { id: "kampoti", km: 14, nama: "Kampoti", lat: -4.2959425, lon: 120.2801166 },
+      { id: "uloe", km: 19, nama: "Uloe", lat: -4.2877713, lon: 120.2354061 },
+      { id: "solo", km: 19, nama: "Solo", lat: -4.2519978, lon: 120.2570421 }
     ];
 
-    document.getElementById("rekap-body").innerHTML = titikPompa.map(p => {
+    var hasil = titikPompa.map(p => {
       var sal = state.S0 * Math.exp(-(uf / currentD) * p.km * 1000);
-      var st = statusOf(sal);
+      return Object.assign({}, p, { sal: sal, status: statusOf(sal) });
+    });
+
+    document.getElementById("rekap-body").innerHTML = hasil.map(p => {
       return `<tr>
-                <td><b>${p.km} km</b> <span style="font-size:12px; color:var(--ink-soft); display:block;">(${p.nama})</span></td>
-                <td class="num">${sal.toFixed(2)} ppt <span class="pill ${st.cls}" style="margin-left:6px">${st.label}</span></td>
+                <td><b>~${p.km} km</b> <span style="font-size:12px; color:var(--ink-soft); display:block;">(${p.nama})</span></td>
+                <td class="num">${p.sal.toFixed(2)} ppt <span class="pill ${p.status.cls}" style="margin-left:6px">${p.status.label}</span></td>
               </tr>`;
     }).join("");
+
+    renderRiverMap(hasil);
+  }
+
+  // --- PETA LEAFLET + TILE OSM ASLI ---
+  // Titik muara dipakai sebagai acuan pasang surut & tampilan awal peta.
+  var MUARA = { lat: -4.34405, lon: 120.39671 };
+  var STATUS_COLOR = { aman: "#4c7a3d", turun: "#b4801f", gagal: "#a8431e" };
+  var leafletMap = null;
+  var markerLayer = {}; // id -> L.CircleMarker
+
+  function initRiverMap(){
+    if (typeof L === "undefined") return; // Leaflet gagal dimuat (mis. offline)
+    leafletMap = L.map("leaflet-map", { scrollWheelZoom: false });
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 17,
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(leafletMap);
+
+    var muaraMarker = L.circleMarker([MUARA.lat, MUARA.lon], {
+      radius: 7, color: "#fff", weight: 2, fillColor: "#163f4a", fillOpacity: 1
+    }).addTo(leafletMap).bindTooltip("Muara (titik pasang surut, 0 km)", { permanent: false });
+
+    var bounds = [[MUARA.lat, MUARA.lon]];
+    [
+      { id: "cenrana", nama: "Cenrana", lat: -4.3304404, lon: 120.3228299 },
+      { id: "kampoti", nama: "Kampoti", lat: -4.2959425, lon: 120.2801166 },
+      { id: "uloe", nama: "Uloe", lat: -4.2877713, lon: 120.2354061 },
+      { id: "solo", nama: "Solo", lat: -4.2519978, lon: 120.2570421 }
+    ].forEach(function(p){
+      var m = L.circleMarker([p.lat, p.lon], {
+        radius: 8, color: "#fff", weight: 2, fillColor: "#9ca3af", fillOpacity: 1
+      }).addTo(leafletMap).bindTooltip(p.nama, { permanent: true, direction: "top", offset: [0,-8], className: "pump-tooltip" });
+      markerLayer[p.id] = m;
+      bounds.push([p.lat, p.lon]);
+    });
+
+    leafletMap.fitBounds(bounds, { padding: [24,24] });
+  }
+
+  // Mewarnai marker peta sesuai status salinitas realtime.
+  function renderRiverMap(hasil){
+    if (!leafletMap) return;
+    hasil.forEach(p => {
+      var marker = markerLayer[p.id];
+      if(!marker) return;
+      marker.setStyle({ fillColor: STATUS_COLOR[p.status.cls] || "#9ca3af" });
+      marker.setTooltipContent(`${p.nama}: ${p.sal.toFixed(2)} ppt (${p.status.label})`);
+    });
   }
 
   function onChange(){
@@ -289,7 +360,7 @@
         panelIklim.classList.add("status-netral");
         statusEl.className = "";
         anomaliEl.className = "";
-        document.getElementById("iklim-text").innerHTML = `Suhu permukaan laut Pasifik Ekuator terpantau netral. Kondisi iklim berjalan sesuai pola anti-monsun lokal tanpa anomali ekstrem.`;
+        document.getElementById("iklim-text").innerHTML = `Suhu permukaan laut Pasifik Ekuator terpantau netral (atau data NOAA sedang tidak tersedia — sistem memakai asumsi netral). Kondisi iklim berjalan sesuai pola anti-monsun lokal tanpa anomali ekstrem.`;
       }
 
       // --- 2. PROSES AKUMULASI HUJAN (AMBANG DINAMIS) ---
@@ -323,10 +394,19 @@
         document.getElementById("flood-text").innerHTML = `Hujan hulu normal (<b>${maxHulu.toFixed(1)} mm</b>). Masih di bawah batas waspada musim ini (<${waspada} mm).`;
       }
 
-      // --- 3. PROSES SALINITAS & HARI TANPA HUJAN ---
-      state.t = Number(data.hari_tanpa_hujan) || 0; 
+      // --- 3. PROSES SALINITAS & HARI TANPA HUJAN (terukur vs proyeksi) ---
+      var hariTerukur = Number(data.hari_tanpa_hujan_terukur) || 0;
+      var hariProyeksi = Number(data.hari_tanpa_hujan_proyeksi) || hariTerukur;
+      state.t = hariProyeksi;
       document.getElementById("in-t").value = state.t; 
       document.getElementById("num-t").value = state.t;
+
+      var detailT = document.getElementById("t-detail");
+      if (data.penalti_kemarau_diterapkan) {
+        detailT.innerHTML = `Terukur dari data cuaca: <b>${hariTerukur} hari</b>. Nilai di atas (${hariProyeksi} hari) sudah ditambah proyeksi +15 hari karena kombinasi puncak kemarau & El Niño — bukan hasil pengukuran langsung. Debit tetap dibatasi pada Qmin untuk t &gt; 90 hari.`;
+      } else {
+        detailT.innerHTML = `Nilai terukur langsung dari data cuaca (tanpa penyesuaian). Debit dibatasi (floor) pada Qmin untuk t &gt; 90 hari — model resesi tidak diekstrapolasi tanpa batas ke bawah baseflow minimum.`;
+      }
       
       var panelSal = document.getElementById("status-panel");
       panelSal.style.display = "block"; panelSal.className = "panel status-panel";
@@ -334,7 +414,7 @@
       var maxTideNum = Number(data.max_tide_meter) || 0;
       var activeD = Number(data.koefisien_dispersi_estimasi) || 100;
       
-      var footNote = `<span class="status-time">Pembaruan: ${updateTimeStr}</span><span class="status-caveat">D adalah estimasi dari pasang, angin laut, & penalti iklim El Niño.</span>`;
+      var footNote = `<span class="status-time">Pembaruan: ${updateTimeStr}</span><span class="status-caveat">D adalah estimasi dari pasang, angin laut, & penalti iklim El Niño — bukan hasil kalibrasi lapangan.</span>`;
 
       if(maxTideNum >= 1.5 && state.t >= 60) {
         panelSal.classList.add("status-darurat");
@@ -361,6 +441,7 @@
     setTimeout(() => { btn.textContent = "Sinkronisasi Data Iklim & Satelit"; btn.disabled = false; }, 4000);
   });
 
+  initRiverMap();
   onChange();
 })();
 </script>
