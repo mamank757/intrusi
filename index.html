@@ -60,6 +60,7 @@
   .status-text { margin: 0; font-size: 13.5px; line-height: 1.5; }
   .status-time { display: block; font-size: 11.5px; font-family: var(--mono); margin-top: 6px; opacity: 0.85; }
   .status-caveat { display: block; font-size: 11px; font-family: var(--mono); margin-top: 4px; opacity: 0.75; font-style: italic; }
+  .status-debug { display: block; font-size: 11px; font-family: var(--mono); margin-top: 4px; opacity: 0.75; color: var(--clay); }
 
   /* Grid Hujan & ENSO */
   .hujan-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
@@ -188,8 +189,7 @@
             <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--amber);margin-right:4px;"></span>Turun Hasil</span>
             <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--clay);margin-right:4px;"></span>Gagal Panen</span>
           </div>
-          <p class="table-caption" style="padding:8px 0 0;">Peta memakai ubin OpenStreetMap asli, jadi bentuk alur sungai mengikuti garis sungai sesungguhnya (bukan gambar skematik). Jarak km pada label titik tetap berupa garis lurus dari titik pasang surut muara, dipakai sebagai input model — bukan jarak alur sungai. Titik "Pallabessi" pada versi sebelumnya dihapus karena tidak ditemukan bukti lokasinya di DAS Walanae; satu-satunya "Pallabessi" yang terverifikasi justru di pesisir barat (Pinrang). Untuk pemakaian dengan trafik tinggi, ganti tile OpenStreetMap gratis ini dengan penyedia ubin berbayar (mis. MapTiler/Stadia Maps) sesuai kebijakan pemakaian wajar OSM.</p>
-        </div>
+         
       </div>
 
       <!-- TABEL REKAP -->
@@ -245,10 +245,10 @@
     // Places) dari titik pasang surut muara. Pallabessi dihapus (lihat
     // catatan di bawah peta) karena tidak terverifikasi berada di DAS Walanae.
     var titikPompa = [
-      { id: "cenrana", km: 8, nama: "Cenrana", lat: -4.3304404, lon: 120.3228299 },
-      { id: "kampoti", km: 14, nama: "Kampoti", lat: -4.2959425, lon: 120.2801166 },
-      { id: "uloe", km: 19, nama: "Uloe", lat: -4.2877713, lon: 120.2354061 },
-      { id: "solo", km: 19, nama: "Solo", lat: -4.2519978, lon: 120.2570421 }
+      { id: "cenrana", km: 10, nama: "Cenrana", lat: -4.332454293035476, lon: 120.33187092848297 },
+      { id: "kampoti", km: 15, nama: "Kampoti", lat: -4.290858635455382, lon: 120.29324711963528 },
+      { id: "uloe", km: 20, nama: "Uloe", lat: -4.289606878816527, lon: 120.24668397128087 },
+      { id: "solo", km: 30, nama: "Solo", lat: -4.236703593533723, lon: 120.22696352161682 }
     ];
 
     var hasil = titikPompa.map(p => {
@@ -287,10 +287,10 @@
 
     var bounds = [[MUARA.lat, MUARA.lon]];
     [
-      { id: "cenrana", nama: "Cenrana", lat: -4.3304404, lon: 120.3228299 },
-      { id: "kampoti", nama: "Kampoti", lat: -4.2959425, lon: 120.2801166 },
-      { id: "uloe", nama: "Uloe", lat: -4.2877713, lon: 120.2354061 },
-      { id: "solo", nama: "Solo", lat: -4.2519978, lon: 120.2570421 }
+      { id: "cenrana", nama: "Cenrana", lat: -4.332454293035476, lon: 120.33187092848297 },
+      { id: "kampoti", nama: "Kampoti", lat: -4.290858635455382, lon: 120.29324711963528 },
+      { id: "uloe", nama: "Uloe", lat: -4.289606878816527, lon: 120.24668397128087 },
+      { id: "solo", nama: "Solo", lat: -4.236703593533723, lon: 120.22696352161682, }
     ].forEach(function(p){
       var m = L.circleMarker([p.lat, p.lon], {
         radius: 8, color: "#fff", weight: 2, fillColor: "#9ca3af", fillOpacity: 1
@@ -321,7 +321,19 @@
   }
 
   // PAUTKAN KE URL DEPLOYMENT GOOGLE APPS SCRIPT ANDA
-  const URL_GAS = "https://script.google.com/macros/s/AKfycbw-TBtZ1tAPPF7jQtD0fe5SM11dSwCTDYY3E1b_6h_RLs2INWGMfAXIjnlpcfpmI4kW/exec";
+  const URL_GAS = "https://script.google.com/macros/s/AKfycbzdrA6a8G3gprcZf5qpQaH7La-KQqm_i-IUnSjjRecy_h4_u9wX7KiK7Az-NsXAH6uL/exec";
+
+  // Membaca "hari tanpa hujan" dari respons dengan toleransi terhadap
+  // beberapa kemungkinan nama field, supaya tidak rapuh terhadap versi
+  // Apps Script yang sedang ter-deploy (field lama: "hari_tanpa_hujan",
+  // field baru: "hari_tanpa_hujan_terukur" / "hari_tanpa_hujan_proyeksi").
+  function bacaHariTanpaHujan(data){
+    var adaFieldBaru = data.hari_tanpa_hujan_terukur !== undefined || data.hari_tanpa_hujan_proyeksi !== undefined;
+    var terukur = Number(adaFieldBaru ? data.hari_tanpa_hujan_terukur : data.hari_tanpa_hujan) || 0;
+    var proyeksi = Number(adaFieldBaru ? data.hari_tanpa_hujan_proyeksi : data.hari_tanpa_hujan);
+    if (isNaN(proyeksi)) proyeksi = terukur;
+    return { terukur: terukur, proyeksi: proyeksi, penalti: proyeksi > terukur, skemaBaru: adaFieldBaru };
+  }
 
   document.getElementById("btn-sync").addEventListener("click", async function(){
     var btn = this; btn.textContent = "Menarik Data Iklim & Satelit..."; btn.disabled = true;
@@ -330,6 +342,7 @@
       var res = await fetch(URL_GAS);
       var data = await res.json();
       if(data.error) throw new Error(data.error);
+      console.log("Respons Apps Script:", data); // buka DevTools (F12) > Console untuk cek field mentah
 
       var updateTimeStr = data.terakhir_diperbarui ? new Date(data.terakhir_diperbarui).toLocaleString('id-ID') : new Date().toLocaleString('id-ID');
 
@@ -395,18 +408,20 @@
       }
 
       // --- 3. PROSES SALINITAS & HARI TANPA HUJAN (terukur vs proyeksi) ---
-      var hariTerukur = Number(data.hari_tanpa_hujan_terukur) || 0;
-      var hariProyeksi = Number(data.hari_tanpa_hujan_proyeksi) || hariTerukur;
-      state.t = hariProyeksi;
+      var t = bacaHariTanpaHujan(data);
+      state.t = t.proyeksi;
       document.getElementById("in-t").value = state.t; 
       document.getElementById("num-t").value = state.t;
 
       var detailT = document.getElementById("t-detail");
-      if (data.penalti_kemarau_diterapkan) {
-        detailT.innerHTML = `Terukur dari data cuaca: <b>${hariTerukur} hari</b>. Nilai di atas (${hariProyeksi} hari) sudah ditambah proyeksi +15 hari karena kombinasi puncak kemarau & El Niño — bukan hasil pengukuran langsung. Debit tetap dibatasi pada Qmin untuk t &gt; 90 hari.`;
-      } else {
-        detailT.innerHTML = `Nilai terukur langsung dari data cuaca (tanpa penyesuaian). Debit dibatasi (floor) pada Qmin untuk t &gt; 90 hari — model resesi tidak diekstrapolasi tanpa batas ke bawah baseflow minimum.`;
-      }
+      var baseTextT = t.penalti
+        ? `Terukur dari data cuaca: <b>${t.terukur} hari</b>. Nilai di atas (${t.proyeksi} hari) sudah ditambah proyeksi karena kombinasi puncak kemarau & El Niño — bukan hasil pengukuran langsung.`
+        : `Nilai terukur langsung dari data cuaca (tanpa penyesuaian).`;
+      var floorTextT = ` Debit tetap dibatasi (floor) pada Qmin untuk t &gt; 90 hari — model resesi tidak diekstrapolasi tanpa batas ke bawah baseflow minimum.`;
+      var debugTextT = !t.skemaBaru
+        ? `<span class="status-debug">Field "hari_tanpa_hujan_terukur/proyeksi" tidak ditemukan di respons — memakai field lama "hari_tanpa_hujan". Redeploy Apps Script versi terbaru untuk pemisahan terukur/proyeksi & label yang lebih akurat.</span>`
+        : ``;
+      detailT.innerHTML = baseTextT + floorTextT + debugTextT;
       
       var panelSal = document.getElementById("status-panel");
       panelSal.style.display = "block"; panelSal.className = "panel status-panel";
