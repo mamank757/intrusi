@@ -245,10 +245,12 @@
     // Places) dari titik pasang surut muara. Pallabessi dihapus (lihat
     // catatan di bawah peta) karena tidak terverifikasi berada di DAS Walanae.
     var titikPompa = [
-      { id: "cenrana", km: 10, nama: "Cenrana", lat: -4.332454293035476, lon: 120.33187092848297 },
+      { id: "cenrana", km: 10, nama: "Cenrana", lat: -4.32276555380242, lon: 120.3133628191657 },
       { id: "kampoti", km: 15, nama: "Kampoti", lat: -4.290858635455382, lon: 120.29324711963528 },
       { id: "uloe", km: 20, nama: "Uloe", lat: -4.289606878816527, lon: 120.24668397128087 },
-      { id: "solo", km: 30, nama: "Solo", lat: -4.236703593533723, lon: 120.22696352161682 }
+      { id: "pallabessi", km: 20, nama: "Pallabessi", lat: -4.256861080477735, lon: 120.23371193679887 },
+      { id: "solo", km: 30, nama: "Solo", lat: -4.23580469208809, lon: 120.20315621365673 },
+      { id: "pompanua", km: 35, nama: "Pompanua", lat: -4.224367708907874, lon: 120.15045713825556 }
     ];
 
     var hasil = titikPompa.map(p => {
@@ -287,10 +289,12 @@
 
     var bounds = [[MUARA.lat, MUARA.lon]];
     [
-      { id: "cenrana", nama: "Cenrana", lat: -4.332454293035476, lon: 120.33187092848297 },
+      { id: "cenrana", nama: "Cenrana", lat: -4.32276555380242, lon: 120.3133628191657 },
       { id: "kampoti", nama: "Kampoti", lat: -4.290858635455382, lon: 120.29324711963528 },
       { id: "uloe", nama: "Uloe", lat: -4.289606878816527, lon: 120.24668397128087 },
-      { id: "solo", nama: "Solo", lat: -4.236703593533723, lon: 120.22696352161682, }
+      { id: "uloe", nama: "Pallabessi", lat: -4.256861080477735, lon: 120.23371193679887 },
+      { id: "solo", nama: "Solo", lat: -4.23580469208809, lon: 120.20315621365673 },
+      { id: "uloe", nama: "Pompanua", lat: -4.224367708907874, lon: 120.15045713825556 }
     ].forEach(function(p){
       var m = L.circleMarker([p.lat, p.lon], {
         radius: 8, color: "#fff", weight: 2, fillColor: "#9ca3af", fillOpacity: 1
