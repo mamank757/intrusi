@@ -83,6 +83,25 @@
   .pill.turun{ background: var(--amber-bg); color: var(--amber); }
   .pill.gagal{ background: var(--clay-bg); color: var(--clay); }
 
+  /* KUSTOMISASI TOOLTIP PETA (LEAFLET) */
+  .leaflet-tooltip.pump-tooltip {
+    font-size: 10px !important;
+    padding: 3px 6px;
+    font-weight: 600;
+    font-family: var(--sans);
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(0,0,0,0.15);
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    white-space: nowrap;
+  }
+  .leaflet-tooltip.muara-tooltip {
+    background: var(--river-deep);
+    color: #fff;
+    border: 1px solid var(--river-deep);
+  }
+  .leaflet-tooltip.muara-tooltip::before { border-bottom-color: var(--river-deep) !important; }
+
   @media (max-width: 480px){
     header.hero{ padding: 24px 12px 0; }
     main{ padding: 12px 10px 40px; }
@@ -111,7 +130,7 @@
       <div class="panel-head"><h2>Parameter Kendali</h2></div>
       <div class="panel-body">
         
-        <button id="btn-sync" class="btn-sync">Sinkronisasi Data Iklim & Satelit</button>
+        <button id="btn-sync" class="btn-sync">Menarik Data Iklim & Satelit...</button>
 
         <div class="field primary" id="field-t">
           <div class="field-top"><span class="field-label">Durasi Tanpa Hujan <span class="sym">t</span></span><span class="field-value"><span id="val-t">60</span> hr</span></div>
@@ -184,12 +203,12 @@
         <div class="panel-head"><h2>Peta Sungai — Paparan Salinitas Realtime</h2></div>
         <div class="panel-body">
           <div id="leaflet-map" style="width:100%; height:400px; border-radius:4px; overflow:hidden;"></div>
-          <div style="display:flex; gap:16px; flex-wrap:wrap; margin-top:8px; font-size:9px; color:var(--ink-soft);">
-            <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--paddy);margin-right:4px;"></span>Aman</span>
+          <div style="display:flex; gap:16px; flex-wrap:wrap; margin-top:8px; font-size:11px; font-weight:500; color:var(--ink-soft);">
+            <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--paddy);margin-right:4px;"></span>Aman (<1.3 ppt)</span>
             <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--amber);margin-right:4px;"></span>Turun Hasil</span>
-            <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--clay);margin-right:4px;"></span>Gagal Panen</span>
+            <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--clay);margin-right:4px;"></span>Gagal Panen (>5 ppt)</span>
           </div>
-         
+          
       </div>
 
       <!-- TABEL REKAP -->
@@ -228,22 +247,18 @@
   ids.forEach(bindField);
 
   function statusOf(v){
-    if(v < 1.3) return {cls:"aman", label:"Aman (<1.3 ppt)"};
+    if(v < 1.3) return {cls:"aman", label:"Aman"};
     if(v <= 5) return {cls:"turun", label:"Turun Hasil"};
-    return {cls:"gagal", label:"Risiko Gagal Panen (>5 ppt)"};
+    return {cls:"gagal", label:"Risiko Gagal"};
   }
 
   function render(){
     var k = 90 / Math.log(state.Qavg / state.Qmin);
-    // Floor pada Qmin: model resesi eksponensial dikalibrasi supaya Q(90)=Qmin.
     var Qt = Math.max(state.Qmin, state.Qavg * Math.exp(-state.t / k));
     var uf = Qt / (state.w * state.d);
     
     var currentD = window.customActiveD || 100; 
     
-    // Titik pompa dengan koordinat & jarak garis-lurus TERVERIFIKASI (Google
-    // Places) dari titik pasang surut muara. Pallabessi dihapus (lihat
-    // catatan di bawah peta) karena tidak terverifikasi berada di DAS Walanae.
     var titikPompa = [
       { id: "cenrana", km: 10, nama: "Cenrana", lat: -4.32276555380242, lon: 120.3133628191657 },
       { id: "kampoti", km: 15, nama: "Kampoti", lat: -4.290858635455382, lon: 120.29324711963528 },
@@ -260,7 +275,7 @@
 
     document.getElementById("rekap-body").innerHTML = hasil.map(p => {
       return `<tr>
-                <td><b>~${p.km} km</b> <span style="font-size:9px; color:var(--ink-soft); display:block;">(${p.nama})</span></td>
+                <td><b>~${p.km} km</b> <span style="font-size:11px; color:var(--ink-soft); display:block;">(${p.nama})</span></td>
                 <td class="num">${p.sal.toFixed(2)} ppt <span class="pill ${p.status.cls}" style="margin-left:6px">${p.status.label}</span></td>
               </tr>`;
     }).join("");
@@ -269,14 +284,13 @@
   }
 
   // --- PETA LEAFLET + TILE OSM ASLI ---
-  // Titik muara dipakai sebagai acuan pasang surut & tampilan awal peta.
   var MUARA = { lat: -4.34405, lon: 120.39671 };
   var STATUS_COLOR = { aman: "#4c7a3d", turun: "#b4801f", gagal: "#a8431e" };
   var leafletMap = null;
-  var markerLayer = {}; // id -> L.CircleMarker
+  var markerLayer = {}; 
 
   function initRiverMap(){
-    if (typeof L === "undefined") return; // Leaflet gagal dimuat (mis. offline)
+    if (typeof L === "undefined") return; 
     leafletMap = L.map("leaflet-map", { scrollWheelZoom: false });
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       maxZoom: 17,
@@ -285,28 +299,38 @@
 
     var muaraMarker = L.circleMarker([MUARA.lat, MUARA.lon], {
       radius: 7, color: "#fff", weight: 2, fillColor: "#163f4a", fillOpacity: 1
-    }).addTo(leafletMap).bindTooltip("Muara (titik pasang surut, 0 km)", { permanent: false });
+    }).addTo(leafletMap).bindTooltip("Muara<br>(Mulut Sungai)", { 
+      permanent: true, 
+      direction: "bottom", 
+      offset: [0, 7], 
+      className: "pump-tooltip muara-tooltip" 
+    });
 
     var bounds = [[MUARA.lat, MUARA.lon]];
+    
     [
-    { id: "cenrana", nama: "Cenrana", lat: -4.32276555380242, lon: 120.3133628191657 },
-    { id: "kampoti", nama: "Kampoti", lat: -4.290858635455382, lon: 120.29324711963528 },
-    { id: "uloe", nama: "Uloe", lat: -4.289606878816527, lon: 120.24668397128087 },
-    { id: "pallabessi", nama: "Pallabessi", lat: -4.256861080477735, lon: 120.23371193679887 },
-    { id: "solo", nama: "Solo", lat: -4.23580469208809, lon: 120.20315621365673 },
-    { id: "pompanua", nama: "Pompanua", lat: -4.224367708907874, lon: 120.15045713825556 }
-  ].forEach(function(p){
+      { id: "cenrana", nama: "Cenrana", lat: -4.32276555380242, lon: 120.3133628191657 },
+      { id: "kampoti", nama: "Kampoti", lat: -4.290858635455382, lon: 120.29324711963528 },
+      { id: "uloe", nama: "Uloe", lat: -4.289606878816527, lon: 120.24668397128087 },
+      { id: "pallabessi", nama: "Pallabessi", lat: -4.256861080477735, lon: 120.23371193679887 },
+      { id: "solo", nama: "Solo", lat: -4.23580469208809, lon: 120.20315621365673 },
+      { id: "pompanua", nama: "Pompanua", lat: -4.224367708907874, lon: 120.15045713825556 }
+    ].forEach(function(p){
       var m = L.circleMarker([p.lat, p.lon], {
         radius: 8, color: "#fff", weight: 2, fillColor: "#9ca3af", fillOpacity: 1
-      }).addTo(leafletMap).bindTooltip(p.nama, { permanent: true, direction: "top", offset: [0,-8], className: "pump-tooltip" });
+      }).addTo(leafletMap).bindTooltip(p.nama, { 
+        permanent: true, 
+        direction: "top", 
+        offset: [0,-8], 
+        className: "pump-tooltip" 
+      });
       markerLayer[p.id] = m;
       bounds.push([p.lat, p.lon]);
     });
 
-    leafletMap.fitBounds(bounds, { padding: [24,24] });
+    leafletMap.fitBounds(bounds, { padding: [30,30] });
   }
 
-  // Mewarnai marker peta sesuai status salinitas realtime.
   function renderRiverMap(hasil){
     if (!leafletMap) return;
     hasil.forEach(p => {
@@ -327,10 +351,6 @@
   // PAUTKAN KE URL DEPLOYMENT GOOGLE APPS SCRIPT ANDA
   const URL_GAS = "https://script.google.com/macros/s/AKfycbzdrA6a8G3gprcZf5qpQaH7La-KQqm_i-IUnSjjRecy_h4_u9wX7KiK7Az-NsXAH6uL/exec";
 
-  // Membaca "hari tanpa hujan" dari respons dengan toleransi terhadap
-  // beberapa kemungkinan nama field, supaya tidak rapuh terhadap versi
-  // Apps Script yang sedang ter-deploy (field lama: "hari_tanpa_hujan",
-  // field baru: "hari_tanpa_hujan_terukur" / "hari_tanpa_hujan_proyeksi").
   function bacaHariTanpaHujan(data){
     var adaFieldBaru = data.hari_tanpa_hujan_terukur !== undefined || data.hari_tanpa_hujan_proyeksi !== undefined;
     var terukur = Number(adaFieldBaru ? data.hari_tanpa_hujan_terukur : data.hari_tanpa_hujan) || 0;
@@ -339,18 +359,19 @@
     return { terukur: terukur, proyeksi: proyeksi, penalti: proyeksi > terukur, skemaBaru: adaFieldBaru };
   }
 
-  document.getElementById("btn-sync").addEventListener("click", async function(){
-    var btn = this; btn.textContent = "Menarik Data Iklim & Satelit..."; btn.disabled = true;
+  // FUNGSI SINKRONISASI DIPISAHKAN AGAR BISA DIPANGGIL OTOMATIS
+  async function syncData() {
+    var btn = document.getElementById("btn-sync");
+    btn.textContent = "Menarik Data Iklim & Satelit...";
+    btn.disabled = true;
     
     try {
       var res = await fetch(URL_GAS);
       var data = await res.json();
       if(data.error) throw new Error(data.error);
-      console.log("Respons Apps Script:", data); // buka DevTools (F12) > Console untuk cek field mentah
 
       var updateTimeStr = data.terakhir_diperbarui ? new Date(data.terakhir_diperbarui).toLocaleString('id-ID') : new Date().toLocaleString('id-ID');
 
-      // --- 1. PROSES DATA ENSO & IKLIM MAKRO ---
       var panelIklim = document.getElementById("iklim-panel");
       panelIklim.style.display = "block"; panelIklim.className = "panel status-panel";
       
@@ -377,10 +398,9 @@
         panelIklim.classList.add("status-netral");
         statusEl.className = "";
         anomaliEl.className = "";
-        document.getElementById("iklim-text").innerHTML = `Suhu permukaan laut Pasifik Ekuator terpantau netral (atau data NOAA sedang tidak tersedia — sistem memakai asumsi netral). Kondisi iklim berjalan sesuai pola anti-monsun lokal tanpa anomali ekstrem.`;
+        document.getElementById("iklim-text").innerHTML = `Suhu permukaan laut Pasifik Ekuator terpantau netral. Kondisi iklim berjalan sesuai pola anti-monsun lokal tanpa anomali ekstrem.`;
       }
 
-      // --- 2. PROSES AKUMULASI HUJAN (AMBANG DINAMIS) ---
       var panelFlood = document.getElementById("flood-panel");
       panelFlood.style.display = "block"; panelFlood.className = "panel status-panel";
       
@@ -391,7 +411,6 @@
       document.getElementById("rain-sidrap").textContent = hSidrap.toFixed(1) + " mm";
       document.getElementById("rain-soppeng").textContent = hSoppeng.toFixed(1) + " mm";
 
-      // Mengambil ambang batas dinamis dari Apps Script
       var siaga = data.ambang_siaga_hujan || 350;
       var waspada = data.ambang_waspada_hujan || 200;
       
@@ -411,7 +430,6 @@
         document.getElementById("flood-text").innerHTML = `Hujan hulu normal (<b>${maxHulu.toFixed(1)} mm</b>). Masih di bawah batas waspada musim ini (<${waspada} mm).`;
       }
 
-      // --- 3. PROSES SALINITAS & HARI TANPA HUJAN (terukur vs proyeksi) ---
       var t = bacaHariTanpaHujan(data);
       state.t = t.proyeksi;
       document.getElementById("in-t").value = state.t; 
@@ -458,10 +476,18 @@
       btn.textContent = "Gagal Mengambil Data"; 
     }
     setTimeout(() => { btn.textContent = "Sinkronisasi Data Iklim & Satelit"; btn.disabled = false; }, 4000);
-  });
+  }
 
+  // JALANKAN SAAT TOMBOL DIKLIK
+  document.getElementById("btn-sync").addEventListener("click", syncData);
+
+  // INISIALISASI PETA DAN TAMPILAN AWAL
   initRiverMap();
   onChange();
+
+  // LANGSUNG JALANKAN SINKRONISASI OTOMATIS SAAT HALAMAN DIMUAT
+  syncData();
+  
 })();
 </script>
 </body>
