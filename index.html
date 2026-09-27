@@ -243,7 +243,14 @@
 <script>
 (function(){
   "use strict";
-  var state = { S0: 30, Qavg: 138, Qmin: 15.8, t: 60, w: 80, d: 12 };
+  
+  // PENYEMPURNAAN: Semua variabel terpusat pada objek state untuk menghindari global scope
+  var state = { 
+    S0: 30, Qavg: 138, Qmin: 15.8, t: 60, w: 80, d: 12, 
+    activeD: 100, 
+    skenarioKeringHari: 15 
+  };
+  
   var ids = ["S0","Qavg","Qmin","t","w","d"];
   var AMBANG_T_DASAR = 60;
   
@@ -268,12 +275,15 @@
     var k = 90 / Math.log(state.Qavg / state.Qmin);
     var Qt = Math.max(state.Qmin, state.Qavg * Math.exp(-t / k));
     var uf = Qt / (state.w * state.d);
-    var currentD = window.customActiveD || 100;
+    
+    // PENYEMPURNAAN: Mengambil nilai activeD dari state, bukan window
+    var currentD = state.activeD; 
     return state.S0 * Math.exp(-(uf / currentD) * km * 1000);
   }
 
   function render(){
-    var skenarioHari = window.skenarioKeringHari || 15;
+    // PENYEMPURNAAN: Mengambil skenarioHari dari state
+    var skenarioHari = state.skenarioKeringHari;
     var tSkenario = state.t + skenarioHari;
 
     var titikPompa = [
@@ -416,7 +426,9 @@
       var ambangT = (typeof data.ambang_t_kritis === "number") ? data.ambang_t_kritis : AMBANG_T_DASAR;
       var skorKering = data.skor_risiko_kering || 0;
       var skorBasah = data.skor_risiko_basah || 0;
-      window.skenarioKeringHari = (typeof data.skenario_kering_hari === "number") ? data.skenario_kering_hari : 15;
+      
+      // PENYEMPURNAAN: Setel nilai ke state, bukan window
+      state.skenarioKeringHari = (typeof data.skenario_kering_hari === "number") ? data.skenario_kering_hari : 15;
 
       // === PANEL IKLIM GLOBAL (ENSO + IOD) ===
       var panelIklim = document.getElementById("iklim-panel");
@@ -603,7 +615,8 @@
         document.getElementById("status-text").innerHTML = `Pasang laut normal <b>${tideTxt}</b>. Kondisi aman untuk penjadwalan irigasi. (D=${activeD}) ${footNote}`;
       }
 
-      window.customActiveD = activeD; 
+      // PENYEMPURNAAN: Menetapkan nilai activeD ke objek state
+      state.activeD = activeD; 
       onChange();
       btn.textContent = "Sinkronisasi Berhasil";
       
