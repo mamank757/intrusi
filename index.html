@@ -243,14 +243,7 @@
 <script>
 (function(){
   "use strict";
-  
-  // PENYEMPURNAAN: Semua variabel terpusat pada objek state untuk menghindari global scope
-  var state = { 
-    S0: 30, Qavg: 138, Qmin: 15.8, t: 60, w: 80, d: 12, 
-    activeD: 100, 
-    skenarioKeringHari: 15 
-  };
-  
+  var state = { S0: 30, Qavg: 138, Qmin: 15.8, t: 60, w: 80, d: 12 };
   var ids = ["S0","Qavg","Qmin","t","w","d"];
   var AMBANG_T_DASAR = 60;
   
@@ -275,21 +268,18 @@
     var k = 90 / Math.log(state.Qavg / state.Qmin);
     var Qt = Math.max(state.Qmin, state.Qavg * Math.exp(-t / k));
     var uf = Qt / (state.w * state.d);
-    
-    // PENYEMPURNAAN: Mengambil nilai activeD dari state, bukan window
-    var currentD = state.activeD; 
+    var currentD = window.customActiveD || 100;
     return state.S0 * Math.exp(-(uf / currentD) * km * 1000);
   }
 
   function render(){
-    // PENYEMPURNAAN: Mengambil skenarioHari dari state
-    var skenarioHari = state.skenarioKeringHari;
+    var skenarioHari = window.skenarioKeringHari || 15;
     var tSkenario = state.t + skenarioHari;
 
     var titikPompa = [
       { id: "cenrana", km: 10, nama: "Cenrana", lat: -4.32276555380242, lon: 120.3133628191657 },
       { id: "kampoti", km: 15, nama: "Kampoti", lat: -4.290858635455382, lon: 120.29324711963528 },
-      { id: "ire'e", km: 20, nama: "Ire'e", lat: -4.289606878816527, lon: 120.24668397128087 },
+      { id: "uloe", km: 20, nama: "Uloe", lat: -4.289606878816527, lon: 120.24668397128087 },
       { id: "pallabessi", km: 25, nama: "Pallabessi", lat: -4.256861080477735, lon: 120.23371193679887 },
       { id: "solo", km: 30, nama: "Solo", lat: -4.23580469208809, lon: 120.20315621365673 },
       { id: "pompanua", km: 35, nama: "Pompanua", lat: -4.224367708907874, lon: 120.15045713825556 }
@@ -345,7 +335,7 @@
     [
       { id: "cenrana", nama: "Cenrana", lat: -4.32276555380242, lon: 120.3133628191657 },
       { id: "kampoti", nama: "Kampoti", lat: -4.290858635455382, lon: 120.29324711963528 },
-      { id: "ire'e", nama: "Ire'e", lat: -4.289606878816527, lon: 120.24668397128087 },
+      { id: "uloe", nama: "Uloe", lat: -4.289606878816527, lon: 120.24668397128087 },
       { id: "pallabessi", nama: "Pallabessi", lat: -4.256861080477735, lon: 120.23371193679887 },
       { id: "solo", nama: "Solo", lat: -4.23580469208809, lon: 120.20315621365673 },
       { id: "pompanua", nama: "Pompanua", lat: -4.224367708907874, lon: 120.15045713825556 }
@@ -383,7 +373,7 @@
   }
 
   // PAUTKAN KE URL DEPLOYMENT GOOGLE APPS SCRIPT ANDA
-  const URL_GAS = "https://script.google.com/macros/s/AKfycbzi_v8Glc9VyKlismYNceLR7gKcKikG4NY0oe6xuUoHAMHPaCAlF7P4cs_KB5JufjBz/exec";
+  const URL_GAS = "https://script.google.com/macros/s/AKfycbwGTobOCMKhu0Dspl1IQkcuqUTXWWPIUm1wO0CHkKihyVtWn_iX18Y4QDiJ9CJaiQ/exec";
 
   // Data hujan dianggap "tidak diperbarui hari ini" jika lebih tua dari ini (jam).
   var BATAS_UMUR_HTH_JAM = 30;
@@ -426,9 +416,7 @@
       var ambangT = (typeof data.ambang_t_kritis === "number") ? data.ambang_t_kritis : AMBANG_T_DASAR;
       var skorKering = data.skor_risiko_kering || 0;
       var skorBasah = data.skor_risiko_basah || 0;
-      
-      // PENYEMPURNAAN: Setel nilai ke state, bukan window
-      state.skenarioKeringHari = (typeof data.skenario_kering_hari === "number") ? data.skenario_kering_hari : 15;
+      window.skenarioKeringHari = (typeof data.skenario_kering_hari === "number") ? data.skenario_kering_hari : 15;
 
       // === PANEL IKLIM GLOBAL (ENSO + IOD) ===
       var panelIklim = document.getElementById("iklim-panel");
@@ -581,10 +569,18 @@
       
       var maxTideGagal = (data.max_tide_meter === null || data.max_tide_meter === undefined);
       var maxTideNum = maxTideGagal ? 0 : Number(data.max_tide_meter);
-      var tideTxt = maxTideGagal ? "tidak tersedia" : maxTideNum.toFixed(2) + " meter";
+      var maxTideLatRaw = data.max_tide_setara_lat_meter;
+      var maxTideLatTxt = (maxTideLatRaw === null || maxTideLatRaw === undefined) ? "" :
+        ` <span style="opacity:0.75">(≈ ${Number(maxTideLatRaw).toFixed(2)} m kalau dibandingkan dengan angka di situs BMKG, datum LAT)</span>`;
+      var tideTxt = maxTideGagal ? "tidak tersedia" : maxTideNum.toFixed(2) + " meter" + maxTideLatTxt;
       var activeD = Number(data.koefisien_dispersi_estimasi) || 100;
       
       var footNote = `<span class="status-time">Pembaruan: ${updateTimeStr}</span><span class="status-caveat">D adalah estimasi dari pasang &amp; angin laut — bukan hasil kalibrasi lapangan.</span>`;
+      if (maxTideLatTxt) {
+        var offsetTampil = (maxTideLatRaw !== null && maxTideLatRaw !== undefined) ?
+          (Number(maxTideLatRaw) - maxTideNum).toFixed(2) : "1.57";
+        footNote += `<span class="status-caveat">*Angka setara LAT adalah perkiraan kasar (offset ~${offsetTampil} m dari 8 titik data), bukan konversi resmi BMKG — pakai sebagai pembanding kasar saja.</span>`;
+      }
       if (ambangT < AMBANG_T_DASAR) {
         footNote += `<span class="status-caveat">*Ambang t kritis diturunkan menjadi ${ambangT} hari karena risiko iklim (El Niño/IOD positif) pada bulan rawan kering.</span>`;
       }
@@ -615,8 +611,7 @@
         document.getElementById("status-text").innerHTML = `Pasang laut normal <b>${tideTxt}</b>. Kondisi aman untuk penjadwalan irigasi. (D=${activeD}) ${footNote}`;
       }
 
-      // PENYEMPURNAAN: Menetapkan nilai activeD ke objek state
-      state.activeD = activeD; 
+      window.customActiveD = activeD; 
       onChange();
       btn.textContent = "Sinkronisasi Berhasil";
       
