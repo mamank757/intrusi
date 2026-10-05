@@ -137,7 +137,7 @@
         <button id="btn-sync" class="btn-sync">Menarik Data Iklim & Satelit...</button>
 
         <div class="field primary" id="field-t">
-          <div class="field-top"><span class="field-label">Durasi Tanpa Hujan <span class="sym">t</span></span><span class="field-value"><span id="val-t">60</span> hr</span></div>
+          <div class="field-top"><span class="field-label">Setara durasi kering <span class="sym">t</span></span><span class="field-value"><span id="val-t">60</span> hr</span></div>
           <div class="field-row"><input type="range" id="in-t" min="0" max="200" step="1" value="60"><input type="number" id="num-t" value="60"></div>
           <p class="field-note" id="t-detail">Debit dibatasi (floor) pada Qmin untuk t &gt; 90 hari — model resesi tidak diekstrapolasi tanpa batas ke bawah baseflow minimum.</p>
         </div>
@@ -536,32 +536,50 @@
       }
 
       // === HARI TANPA HUJAN (t) — nilai terukur, dipakai model resesi debit ===
-      var t = bacaHariTanpaHujan(data);
+            var t = bacaHariTanpaHujan(data);
       var detailT = document.getElementById("t-detail");
       var ambangEfektif = (typeof data.ambang_hujan_efektif_mm === "number") ? data.ambang_hujan_efektif_mm : null;
 
-      if (t.gagal) {
-        var pesanGagal = t.skemaLama
-          ? `Respons backend memakai skema lama — redeploy Apps Script versi terbaru. Nilai geser di samping tidak diperbarui otomatis.`
-          : `Belum ada data Hari Tanpa Hujan yang valid dari Soppeng &amp; Sidrap. Nilai geser di samping <b>tidak diperbarui otomatis</b> dan mungkin sudah usang — periksa manual sebelum mengambil keputusan pompa.`;
-        detailT.innerHTML = `<span class="status-debug">${pesanGagal}</span>`;
-      } else {
+      // t setara dari indeks hujan antecedent: Q = Qavg * rasio  ->  t = k * ln(1/rasio)
+      var rasio = (typeof data.indeks_basah_rasio === "number") ? data.indeks_basah_rasio : null;
+      var tEf = null, qEst = null;
+      if (rasio !== null) {
+        var kRes = 90 / Math.log(state.Qavg / state.Qmin);
+        var r = Math.min(Math.max(rasio, 0.001), 1);
+        tEf = Math.min(200, Math.round(kRes * Math.log(1 / r)));
+        qEst = Math.max(state.Qmin, state.Qavg * r);
+      }
+
+      var hthInfo = t.gagal ? "" :
+        ` <span class="status-caveat">Pembanding: ${t.terukur} hari berturut-turut tanpa hujan efektif` +
+        (ambangEfektif !== null ? ` (&lt; ${ambangEfektif} mm di kedua stasiun)` : ``) + `. Info saja, tidak dipakai model.</span>`;
+
+      if (tEf !== null) {
+        state.t = tEf;
+        document.getElementById("in-t").value = state.t;
+        document.getElementById("num-t").value = state.t;
+        var umurIdx = (typeof data.indeks_basah_umur_jam === "number") ? data.indeks_basah_umur_jam : null;
+        var umurTextT = (umurIdx !== null && umurIdx > BATAS_UMUR_HTH_JAM)
+          ? ` <span class="status-debug">Data hujan dihitung sekitar ${Math.round(umurIdx)} jam lalu — pengambilan baru belum berhasil.</span>` : ``;
+        detailT.innerHTML =
+          `<b>Setara t</b> dari indeks hujan antecedent (peluruhan paruh-waktu ~13,5 hari): ${data.indeks_basah_mm} mm ` +
+          `= ${Math.round(rasio * 100)}% dari kondisi normal → debit estimasi ≈ ${qEst.toFixed(1)} m³/s. ` +
+          `Debit dibatasi pada Qmin; tanpa penyesuaian El Niño/IOD.` +
+          `<span class="status-caveat">Rasio terhadap kondisi normal masih asumsi (API_REFERENSI_MM), belum dikalibrasi dengan debit nyata.</span>` +
+          hthInfo + umurTextT;
+      } else if (!t.gagal) {
+        // Cadangan: indeks tidak tersedia, pakai HTH terukur
         state.t = t.terukur;
         document.getElementById("in-t").value = state.t;
         document.getElementById("num-t").value = state.t;
-
-        var baseTextT = `Terukur dari hujan rata-rata DAS (Soppeng &amp; Sidrap)` +
-          (ambangEfektif !== null ? `; hari dengan hujan &lt; ${ambangEfektif} mm dianggap gerimis dan tidak memutus hitungan.` : `.`) +
-          ` Tanpa penyesuaian El Niño/IOD.`;
-        var floorTextT = ` Debit dibatasi (floor) pada Qmin untuk t &gt; 90 hari — model resesi tidak diekstrapolasi tanpa batas ke bawah baseflow minimum.`;
-        var lengkapTextT = !t.lengkap
-          ? ` <span class="status-caveat">*Salah satu stasiun (Soppeng/Sidrap) tidak punya data sama sekali — angka HTH mungkin kurang mewakili kondisi DAS.</span>`
-          : ``;
-        var umurTextT = (t.umurJam !== null && t.umurJam > BATAS_UMUR_HTH_JAM)
-          ? ` <span class="status-debug">Data hujan ini dihitung sekitar ${Math.round(t.umurJam)} jam lalu — pengambilan data baru belum berhasil, jadi angka bisa tertinggal beberapa hari.</span>`
-          : ``;
-        detailT.innerHTML = baseTextT + floorTextT + lengkapTextT + umurTextT;
+        detailT.innerHTML = `Indeks hujan antecedent tidak tersedia; memakai HTH terukur (kurang stabil).` + hthInfo;
+      } else {
+        var pesanGagal = t.skemaLama
+          ? `Respons backend memakai skema lama — redeploy Apps Script versi terbaru. Nilai geser di samping tidak diperbarui otomatis.`
+          : `Belum ada data hujan valid dari Soppeng &amp; Sidrap. Nilai geser di samping <b>tidak diperbarui otomatis</b> dan mungkin sudah usang.`;
+        detailT.innerHTML = `<span class="status-debug">${pesanGagal}</span>`;
       }
+      t.gagal = (tEf === null && t.gagal); // dipakai footNote di bawah
       
       // === PANEL SALINITAS / STATUS POMPANISASI ===
       var panelSal = document.getElementById("status-panel");
@@ -577,6 +595,9 @@
       
       var footNote = `<span class="status-time">Pembaruan: ${updateTimeStr}</span><span class="status-caveat">D adalah estimasi dari pasang &amp; angin laut — bukan hasil kalibrasi lapangan.</span>`;
       if (maxTideLatTxt) {
+              if (data.fase_pasang) {
+        footNote += `<span class="status-caveat">Fase pasang (perkiraan bulan): ${escapeHtml(data.fase_pasang)}.</span>`;
+      }
         var offsetTampil = (maxTideLatRaw !== null && maxTideLatRaw !== undefined) ?
           (Number(maxTideLatRaw) - maxTideNum).toFixed(2) : "1.57";
         footNote += `<span class="status-caveat">*Angka setara LAT adalah perkiraan kasar (offset ~${offsetTampil} m dari 8 titik data), bukan konversi resmi BMKG — pakai sebagai pembanding kasar saja.</span>`;
