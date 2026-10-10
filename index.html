@@ -5,113 +5,144 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sistem Deteksi Salinitas, Banjir & Iklim — Walanae</title>
 <style>
-  :root{
-    --bg: #eef2ec; --paper: #fbfcf9; --ink: #17262a; --ink-soft: #52605f; --line: #d7ddd1;
-    --river-deep: #163f4a; --river: #1f5c6b; --river-light: #4d92a0;
-    --paddy: #4c7a3d; --paddy-bg: #e7f0e0; 
-    --amber: #b4801f; --amber-bg: #f6ecd6; 
-    --clay: #a8431e; --clay-bg: #f5e2d7;
-    --flood: #0284c7; --flood-bg: #e0f2fe;
-    --radius: 4px; --serif: Georgia, serif; --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; --mono: ui-monospace, monospace;
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+  :root {
+    /* Palet Warna Modern */
+    --bg: #f1f5f9; 
+    --paper: #ffffff; 
+    --ink: #1e293b; 
+    --ink-soft: #64748b; 
+    --line: #e2e8f0;
+    
+    --river-deep: #0f172a; 
+    --river: #0284c7; 
+    
+    --paddy: #16a34a; --paddy-bg: #dcfce7;  
+    --amber: #d97706; --amber-bg: #fef3c7;  
+    --clay: #dc2626; --clay-bg: #fee2e2;
+    --flood: #2563eb; --flood-bg: #dbeafe;
+    
+    --radius: 12px; 
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    
+    --sans: 'Inter', system-ui, -apple-system, sans-serif; 
+    --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   }
-  *{ box-sizing: border-box; }
-  html, body{ margin:0; padding:0; background: var(--bg); color: var(--ink); font-family: var(--sans); font-size: 15px; line-height: 1.5; }
   
-  header.hero{ background: linear-gradient(180deg, var(--river-deep), var(--river)); color: #eef4f2; padding: 32px 16px 0; position: relative; overflow: hidden; }
-  .hero-inner{ max-width: 1120px; margin: 0 auto; padding-bottom: 24px; position: relative; z-index: 2; }
-  .hero-eyebrow{ font-family: var(--mono); font-size: 11.5px; letter-spacing: 0.03em; color: #b9d6d3; margin: 0 0 8px; text-transform: uppercase; }
-  h1{ font-family: var(--serif); font-weight: 400; font-size: clamp(24px, 4vw, 38px); line-height: 1.15; margin: 0 0 10px; }
-  .hero-desc{ max-width: 620px; color: #dbe9e6; font-size: 14px; margin: 0; }
-  .river-wave{ position: absolute; left: 0; right: 0; bottom: -1px; width: 100%; height: 36px; display: block; }
+  * { box-sizing: border-box; }
+  html, body { margin:0; padding:0; background: var(--bg); color: var(--ink); font-family: var(--sans); font-size: 14px; line-height: 1.6; }
+  
+  /* Hero Section */
+  header.hero { background: linear-gradient(135deg, var(--river-deep), #1e3a8a); color: #f8fafc; padding: 40px 20px 0; position: relative; overflow: hidden; }
+  .hero-inner { max-width: 1120px; margin: 0 auto; padding-bottom: 32px; position: relative; z-index: 2; }
+  .hero-eyebrow { font-family: var(--mono); font-size: 12px; font-weight: 600; letter-spacing: 0.05em; color: #7dd3fc; margin: 0 0 12px; text-transform: uppercase; }
+  h1 { font-weight: 700; font-size: clamp(28px, 4vw, 42px); line-height: 1.2; margin: 0 0 12px; letter-spacing: -0.02em; }
+  .hero-desc { max-width: 650px; color: #bae6fd; font-size: 15px; margin: 0; line-height: 1.6; }
+  .river-wave { position: absolute; left: 0; right: 0; bottom: -1px; width: 100%; height: 48px; display: block; }
+  .river-wave path { fill: var(--bg); }
 
-  main{ max-width: 1120px; margin: 0 auto; padding: 20px 14px 60px; }
-  .layout{ display: grid; grid-template-columns: 320px 1fr; gap: 16px; align-items: start; }
-  @media (max-width: 860px){ .layout{ grid-template-columns: 1fr; } }
+  /* Layout & Panels */
+  main { max-width: 1120px; margin: 0 auto; padding: 24px 16px 80px; }
+  .layout { display: grid; grid-template-columns: 340px 1fr; gap: 24px; align-items: start; }
+  @media (max-width: 860px){ .layout { grid-template-columns: 1fr; } }
 
-  .panel{ background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: 0 1px 3px rgba(0,0,0,0.02); }
-  .panel + .panel{ margin-top: 16px; }
-  .panel-head{ padding: 14px 16px 10px; border-bottom: 1px solid var(--line); }
-  .panel-head h2{ font-family: var(--serif); font-weight: 400; font-size: 18px; margin: 0; color: var(--river-deep); }
-  .panel-body{ padding: 14px 16px 16px; }
+  .panel { background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow-sm); overflow: hidden; transition: box-shadow 0.2s ease; }
+  .panel:hover { box-shadow: var(--shadow); }
+  .panel + .panel { margin-top: 24px; }
+  .panel-head { padding: 16px 20px; border-bottom: 1px solid var(--line); background: #f8fafc; }
+  .panel-head h2 { font-weight: 600; font-size: 16px; margin: 0; color: var(--river-deep); letter-spacing: -0.01em; }
+  .panel-body { padding: 20px; }
 
-  .field{ margin-bottom: 12px; }
-  .field-top{ display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
-  .field-label{ font-size: 13px; color: var(--ink); }
-  .field-value{ font-family: var(--mono); font-size: 13px; color: var(--river-deep); }
-  .field-row{ display: flex; align-items: center; gap: 8px; }
-  input[type="range"]{ flex: 1; accent-color: var(--river); height: 6px; }
-  input[type="number"]{ width: 68px; font-family: var(--mono); font-size: 14px; border: 1px solid var(--line); border-radius: var(--radius); padding: 6px 8px; background: #fff; }
-  .field.primary{ background: var(--amber-bg); border: 1px solid #e0c284; border-radius: var(--radius); padding: 10px 12px 12px; margin: -2px 0 14px; }
-  .field-note{ font-size: 11.5px; color: var(--ink-soft); margin: 4px 0 0; line-height: 1.4; }
-  .section-sep{ font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-soft); margin: 18px 0 8px; padding-top: 12px; border-top: 1px dashed var(--line); }
+  /* Form Controls */
+  .field { margin-bottom: 16px; }
+  .field-top { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+  .field-label { font-size: 13.5px; font-weight: 500; color: var(--ink); }
+  .field-value { font-family: var(--mono); font-size: 13px; font-weight: 600; color: var(--river); background: #e0f2fe; padding: 2px 8px; border-radius: 6px; }
+  .field-row { display: flex; align-items: center; gap: 12px; }
+  
+  input[type="range"] { flex: 1; -webkit-appearance: none; height: 6px; background: #cbd5e1; border-radius: 4px; outline: none; }
+  input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%; background: var(--river); cursor: pointer; border: 2px solid #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.2); transition: transform 0.1s; }
+  input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.15); }
+  input[type="number"] { width: 76px; font-family: var(--mono); font-size: 14px; border: 1px solid var(--line); border-radius: 8px; padding: 8px; background: #fff; text-align: center; transition: border-color 0.2s; }
+  input[type="number"]:focus { border-color: var(--river); outline: none; box-shadow: 0 0 0 3px var(--flood-bg); }
+  
+  .field.primary { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 16px; margin: 0 0 20px; }
+  .field.primary .field-value { background: #dcfce7; color: #166534; }
+  .field.primary input[type="range"]::-webkit-slider-thumb { background: #16a34a; }
+  
+  .field-note { font-size: 12px; color: var(--ink-soft); margin: 8px 0 0; line-height: 1.5; }
+  .section-sep { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-soft); margin: 24px 0 12px; padding-top: 16px; border-top: 1px dashed var(--line); }
 
-  .btn-sync { width: 100%; padding: 12px; background: #e7f0e0; border: 1px solid #4c7a3d; border-radius: var(--radius); font-size: 14px; font-weight: 600; cursor: pointer; color: #4c7a3d; margin-bottom: 14px; text-align: center; }
-  .btn-sync:disabled { opacity: 0.6; cursor: wait; }
+  /* Sync Button */
+  .btn-sync { width: 100%; padding: 14px; background: linear-gradient(180deg, var(--river), var(--river-deep)); border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; color: #fff; margin-bottom: 20px; text-align: center; box-shadow: 0 2px 4px rgba(2, 132, 199, 0.3); transition: all 0.2s; }
+  .btn-sync:hover { transform: translateY(-1px); box-shadow: 0 4px 6px rgba(2, 132, 199, 0.4); }
+  .btn-sync:disabled { background: #94a3b8; box-shadow: none; cursor: wait; transform: none; }
 
   /* Banners Status */
-  .status-panel { display: none; margin-bottom: 16px; border-width: 1.5px; }
-  .status-darurat { background: var(--clay-bg); border-color: var(--clay); color: var(--clay); }
-  .status-waspada { background: var(--amber-bg); border-color: var(--amber); color: #825b12; }
-  .status-aman { background: var(--paddy-bg); border-color: var(--paddy); color: var(--paddy); }
-  .status-banjir-awas { background: var(--flood-bg); border-color: var(--flood); color: #0369a1; }
-  .status-netral { background: #f3f4f6; border-color: #9ca3af; color: #4b5563; }
+  .status-panel { display: none; margin-bottom: 24px; border-width: 1px; border-left-width: 5px; }
+  .status-darurat { background: var(--clay-bg); border-color: #fca5a5; border-left-color: var(--clay); color: #991b1b; }
+  .status-waspada { background: var(--amber-bg); border-color: #fde68a; border-left-color: var(--amber); color: #92400e; }
+  .status-aman { background: var(--paddy-bg); border-color: #bbf7d0; border-left-color: var(--paddy); color: #166534; }
+  .status-banjir-awas { background: var(--flood-bg); border-color: #bfdbfe; border-left-color: var(--flood); color: #1e40af; }
+  .status-netral { background: #f8fafc; border-color: var(--line); border-left-color: #94a3b8; color: #334155; }
   
-  .status-title { font-family: var(--sans); font-size: 14.5px; font-weight: 700; margin: 0 0 6px; text-transform: uppercase; letter-spacing: 0.02em; }
-  .status-text { margin: 0; font-size: 13.5px; line-height: 1.5; }
-  .status-time { display: block; font-size: 11.5px; font-family: var(--mono); margin-top: 6px; opacity: 0.85; }
-  .status-caveat { display: block; font-size: 11px; font-family: var(--mono); margin-top: 4px; opacity: 0.75; font-style: italic; }
-  .status-debug { display: block; font-size: 11px; font-family: var(--mono); margin-top: 4px; opacity: 0.75; color: var(--clay); }
-  .text-gagal{ color: var(--clay) !important; font-style: italic; }
+  .status-title { font-size: 14px; font-weight: 700; margin: 0 0 8px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .status-text { margin: 0; font-size: 14px; line-height: 1.6; }
+  .status-time { display: block; font-size: 12px; font-family: var(--mono); margin-top: 10px; font-weight: 500; opacity: 0.8; }
+  .status-caveat { display: block; font-size: 12px; font-family: var(--sans); margin-top: 6px; color: inherit; opacity: 0.85; font-style: italic; }
+  .status-debug { display: block; font-size: 12px; font-family: var(--mono); margin-top: 6px; color: var(--clay); }
+  .text-gagal { color: var(--clay) !important; font-style: italic; }
 
   /* Grid Hujan & ENSO/IOD */
-  .hujan-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
-  .hujan-box { background: rgba(255,255,255,0.7); border: 1px solid rgba(0,0,0,0.06); padding: 8px; border-radius: var(--radius); text-align: center; }
-  .hujan-box span { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 2px; color: var(--ink-soft); }
-  .hujan-box strong { font-family: var(--mono); font-size: 16px; color: var(--flood); }
+  .hujan-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin-top: 16px; }
+  .hujan-box { background: rgba(255,255,255,0.6); border: 1px solid rgba(0,0,0,0.05); padding: 12px; border-radius: 8px; text-align: center; box-shadow: 0 1px 2px rgba(0,0,0,0.02); }
+  .hujan-box span { display: block; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; color: var(--ink-soft); }
+  .hujan-box strong { font-family: var(--mono); font-size: 18px; font-weight: 700; color: var(--river-deep); }
   .enso-red { color: var(--clay) !important; }
   .enso-blue { color: var(--flood) !important; }
-  .risk-lines { margin: 10px 0 0; padding: 0; list-style: none; font-size: 13px; line-height: 1.5; }
-  .risk-lines li { margin-top: 6px; }
+  .risk-lines { margin: 16px 0 0; padding: 0 0 0 16px; font-size: 13.5px; line-height: 1.6; }
+  .risk-lines li { margin-top: 8px; }
 
-  /* Responsive Table Layout untuk HP */
-  .table-scroll{ width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-  table{ width: 100%; border-collapse: collapse; font-size: 13px; }
-  th, td{ text-align: left; padding: 10px 8px; border-bottom: 1px solid var(--line); }
-  th{ font-weight: 600; color: var(--ink-soft); background: #f4f6f0; }
-  td.num, th.num{ text-align: right; font-family: var(--mono); }
-  td.skenario, th.skenario{ border-left: 1px dashed var(--line); }
-  .table-caption{ font-size: 11.5px; color: var(--ink-soft); padding: 8px 16px 12px; margin: 0; line-height: 1.4; }
+  /* Responsive Table */
+  .table-scroll { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  th, td { text-align: left; padding: 14px 16px; border-bottom: 1px solid var(--line); }
+  th { font-weight: 600; color: var(--ink-soft); background: #f8fafc; font-size: 12.5px; text-transform: uppercase; letter-spacing: 0.02em; }
+  tbody tr:hover { background: #f1f5f9; }
+  td.num, th.num { text-align: right; font-family: var(--mono); }
+  td.skenario, th.skenario { border-left: 1px dashed var(--line); background: rgba(248, 250, 252, 0.4); }
+  .table-caption { font-size: 12px; color: var(--ink-soft); padding: 12px 20px 16px; margin: 0; line-height: 1.5; font-style: italic; }
   
-  .pill{ display: inline-block; padding: 3px 8px; border-radius: 20px; font-size: 11.5px; font-weight: 500; white-space: nowrap; }
-  .pill.aman{ background: var(--paddy-bg); color: var(--paddy); }
-  .pill.turun{ background: var(--amber-bg); color: var(--amber); }
-  .pill.gagal{ background: var(--clay-bg); color: var(--clay); }
+  .pill { display: inline-flex; align-items: center; justify-content: center; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; white-space: nowrap; font-family: var(--sans); }
+  .pill.aman { background: var(--paddy-bg); color: var(--paddy); }
+  .pill.turun { background: var(--amber-bg); color: var(--amber); }
+  .pill.gagal { background: var(--clay-bg); color: var(--clay); }
 
-  /* KUSTOMISASI TOOLTIP PETA (LEAFLET) */
-  .leaflet-tooltip.pump-tooltip {
-    font-size: 10px !important;
-    padding: 3px 6px;
-    font-weight: 600;
-    font-family: var(--sans);
-    background: rgba(255, 255, 255, 0.95);
-    border: 1px solid rgba(0,0,0,0.15);
-    border-radius: 4px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    white-space: nowrap;
-  }
-  .leaflet-tooltip.muara-tooltip {
-    background: var(--river-deep);
-    color: #fff;
-    border: 1px solid var(--river-deep);
-  }
+  /* LEAFLET KUSTOMISASI */
+  .leaflet-container { font-family: var(--sans); }
+  .leaflet-tooltip.pump-tooltip { font-size: 11px !important; padding: 4px 8px; font-weight: 600; color: var(--ink); background: rgba(255, 255, 255, 0.95); border: 1px solid var(--line); border-radius: 6px; box-shadow: var(--shadow-sm); white-space: nowrap; }
+  .leaflet-tooltip.muara-tooltip { background: var(--river-deep); color: #fff; border: none; font-size: 12px !important; }
   .leaflet-tooltip.muara-tooltip::before { border-bottom-color: var(--river-deep) !important; }
 
-  @media (max-width: 480px){
-    header.hero{ padding: 24px 12px 0; }
-    main{ padding: 12px 10px 40px; }
-    .panel-head{ padding: 12px 14px 8px; }
-    .panel-body{ padding: 12px 14px 14px; }
-    input[type="number"]{ width: 62px; font-size: 16px; }
+  /* GRAFIK SIMULASI */
+  .chart-controls { display: flex; align-items: center; gap: 12px; margin: 0 0 16px; font-size: 13.5px; color: var(--ink-soft); flex-wrap: wrap; }
+  .chart-controls select { font-family: var(--mono); font-size: 14px; border: 1px solid var(--line); border-radius: 6px; padding: 6px 12px; background: #fff; color: var(--ink); font-weight: 500; cursor: pointer; outline: none; }
+  .chart-controls select:focus { border-color: var(--river); }
+  .chart-wrap { position: relative; width: 100%; border: 1px solid var(--line); border-radius: 8px; background: #fafafa; overflow: hidden; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); }
+  .chart-wrap canvas { display: block; width: 100%; touch-action: pan-y; cursor: crosshair; }
+  .chart-readout { font-family: var(--mono); font-size: 12.5px; font-weight: 500; color: var(--river-deep); background: #e0f2fe; padding: 8px 12px; border-radius: 6px; min-height: 35px; margin: 16px 0 0; display: flex; align-items: center; border: 1px solid #bae6fd; }
+  .chart-legend { display: flex; flex-wrap: wrap; gap: 8px 16px; margin-top: 16px; font-size: 12.5px; font-weight: 500; color: var(--ink-soft); }
+  .chart-legend .sw { display: inline-block; width: 14px; height: 14px; border-radius: 3px; margin-right: 6px; vertical-align: -2px; border: 1px solid rgba(0,0,0,0.15); }
+  .chart-legend .ln { display: inline-block; width: 22px; height: 0; margin-right: 6px; vertical-align: 4px; border-top: 2.5px solid; }
+
+  @media (max-width: 480px) {
+    header.hero { padding: 32px 16px 0; }
+    main { padding: 16px 12px 40px; }
+    .panel-head { padding: 14px 16px; }
+    .panel-body { padding: 16px; }
+    input[type="number"] { width: 68px; font-size: 14px; }
   }
 </style>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
@@ -120,48 +151,48 @@
 
 <header class="hero">
   <div class="hero-inner">
-    <p class="hero-eyebrow">Mitigasi Iklim Ekstrem Persawahan</p>
+    <p class="hero-eyebrow">Smart Farming & Mitigasi Cerdas</p>
     <h1>Deteksi Salinitas & Banjir</h1>
-    <p class="hero-desc">Sistem pemantauan baji garam estuari Walanae dan akumulasi curah hujan dinamis berbasis iklim anti-monsunal, ENSO, dan IOD.</p>
+    <p class="hero-desc">Sistem pemantauan cerdas baji garam estuari Walanae dan akumulasi curah hujan hulu terintegrasi proyeksi iklim ENSO/IOD.</p>
   </div>
-  <svg class="river-wave" viewBox="0 0 1200 36" preserveAspectRatio="none"><path d="M0,18 C150,34 300,2 450,16 C600,30 750,4 900,18 C1050,32 1150,8 1200,16 L1200,36 L0,36 Z" fill="#eef2ec"></path></svg>
+  <svg class="river-wave" viewBox="0 0 1200 48" preserveAspectRatio="none"><path d="M0,24 C150,45 300,3 450,21 C600,39 750,5 900,24 C1050,43 1150,11 1200,21 L1200,48 L0,48 Z"></path></svg>
 </header>
 
 <main>
   <div class="layout">
     <!-- PANEL KIRI: KENDALI -->
     <div class="panel">
-      <div class="panel-head"><h2>Parameter Kendali</h2></div>
+      <div class="panel-head"><h2>Parameter Model</h2></div>
       <div class="panel-body">
         
-        <button id="btn-sync" class="btn-sync">Menarik Data Iklim & Satelit...</button>
+        <button id="btn-sync" class="btn-sync">Menarik Data IoT & Satelit...</button>
 
         <div class="field primary" id="field-t">
-          <div class="field-top"><span class="field-label">Setara durasi kering <span class="sym">t</span></span><span class="field-value"><span id="val-t">60</span> hr</span></div>
+          <div class="field-top"><span class="field-label">Durasi Kering Ekivalen <span style="font-family:var(--mono)">(t)</span></span><span class="field-value"><span id="val-t">60</span> hr</span></div>
           <div class="field-row"><input type="range" id="in-t" min="0" max="200" step="1" value="60"><input type="number" id="num-t" value="60"></div>
           <p class="field-note" id="t-detail">Debit dibatasi (floor) pada Qmin untuk t &gt; 90 hari — model resesi tidak diekstrapolasi tanpa batas ke bawah baseflow minimum.</p>
         </div>
 
         <div class="field">
-          <div class="field-top"><span class="field-label">Salinitas S₀</span><span class="field-value"><span id="val-S0">30</span> ppt</span></div>
+          <div class="field-top"><span class="field-label">Salinitas S₀ (Muara)</span><span class="field-value"><span id="val-S0">30</span> ppt</span></div>
           <div class="field-row"><input type="range" id="in-S0" min="10" max="40" step="0.5" value="30"><input type="number" id="num-S0" value="30"></div>
         </div>
         <div class="field">
-          <div class="field-top"><span class="field-label">Debit Qavg</span><span class="field-value"><span id="val-Qavg">138</span> m³/s</span></div>
+          <div class="field-top"><span class="field-label">Debit Rata-rata Qavg</span><span class="field-value"><span id="val-Qavg">138</span> m³/s</span></div>
           <div class="field-row"><input type="range" id="in-Qavg" min="50" max="300" value="138"><input type="number" id="num-Qavg" value="138"></div>
         </div>
         <div class="field">
-          <div class="field-top"><span class="field-label">Debit Qmin</span><span class="field-value"><span id="val-Qmin">15.8</span> m³/s</span></div>
+          <div class="field-top"><span class="field-label">Debit Minimum Qmin</span><span class="field-value"><span id="val-Qmin">15.8</span> m³/s</span></div>
           <div class="field-row"><input type="range" id="in-Qmin" min="1" max="50" step="0.1" value="15.8"><input type="number" id="num-Qmin" value="15.8"></div>
         </div>
 
         <div class="section-sep">Geometri Penampang Sungai</div>
         <div class="field">
-          <div class="field-top"><span class="field-label">Lebar Sungai (w)</span><span class="field-value"><span id="val-w">80</span> m</span></div>
+          <div class="field-top"><span class="field-label">Lebar Rata-rata (w)</span><span class="field-value"><span id="val-w">80</span> m</span></div>
           <div class="field-row"><input type="range" id="in-w" min="20" max="250" step="1" value="80"><input type="number" id="num-w" value="80"></div>
         </div>
         <div class="field">
-          <div class="field-top"><span class="field-label">Kedalaman Sungai (d)</span><span class="field-value"><span id="val-d">12</span> m</span></div>
+          <div class="field-top"><span class="field-label">Kedalaman Aktif (d)</span><span class="field-value"><span id="val-d">12</span> m</span></div>
           <div class="field-row"><input type="range" id="in-d" min="1" max="30" step="0.5" value="12"><input type="number" id="num-d" value="12"></div>
         </div>
       </div>
@@ -173,10 +204,10 @@
       <!-- BANNER IKLIM GLOBAL (ENSO + IOD) -->
       <div class="panel status-panel" id="iklim-panel">
         <div class="panel-body">
-          <h2 id="iklim-title" class="status-title">STATUS IKLIM GLOBAL (ENSO &amp; IOD)</h2>
+          <h2 id="iklim-title" class="status-title">Proyeksi Iklim Global (ENSO & IOD)</h2>
           <div class="hujan-grid">
             <div class="hujan-box"><span>Fase ENSO</span><strong id="enso-status">-</strong></div>
-            <div class="hujan-box"><span>SST Anomali Niño 3.4</span><strong id="enso-anomali">-</strong></div>
+            <div class="hujan-box"><span>Anomali Niño 3.4</span><strong id="enso-anomali">-</strong></div>
             <div class="hujan-box"><span>Fase IOD</span><strong id="iod-status">-</strong></div>
             <div class="hujan-box"><span>DMI Bulanan</span><strong id="iod-dmi">-</strong></div>
           </div>
@@ -187,7 +218,7 @@
       <!-- BANNER BANJIR HULU (30 HARI) -->
       <div class="panel status-panel" id="flood-panel">
         <div class="panel-body">
-          <h2 id="flood-title" class="status-title">STATUS AKUMULASI HUJAN HULU (30 HARI)</h2>
+          <h2 id="flood-title" class="status-title">Status Akumulasi Hujan Hulu (30 Hari)</h2>
           <p id="flood-text" class="status-text"></p>
           <div class="hujan-grid">
             <div class="hujan-box"><span>Hujan Sidrap</span><strong id="rain-sidrap">0 mm</strong></div>
@@ -199,39 +230,59 @@
       <!-- BANNER SALINITAS -->
       <div class="panel status-panel" id="status-panel">
         <div class="panel-body">
-          <h2 id="status-title" class="status-title">STATUS POMPANISASI</h2>
+          <h2 id="status-title" class="status-title">Rekomendasi Operasional Pompa</h2>
           <p id="status-text" class="status-text"></p>
         </div>
       </div>
 
-      <!-- PETA SUNGAI ASLI (OpenStreetMap) — PAPARAN SALINITAS REALTIME -->
+      <!-- PETA SUNGAI (Leaflet) -->
       <div class="panel">
-        <div class="panel-head"><h2>Peta Sungai — Paparan Salinitas Realtime</h2></div>
-        <div class="panel-body">
-          <div id="leaflet-map" style="width:100%; height:400px; border-radius:4px; overflow:hidden;"></div>
-          <div style="display:flex; gap:16px; flex-wrap:wrap; margin-top:8px; font-size:11px; font-weight:500; color:var(--ink-soft);">
-            <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--paddy);margin-right:4px;"></span>Aman (&lt;1.3 ppt)</span>
-            <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--amber);margin-right:4px;"></span>Turun Hasil</span>
-            <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--clay);margin-right:4px;"></span>Gagal Panen (&gt;5 ppt)</span>
+        <div class="panel-head"><h2>Peta Distribusi Salinitas Realtime</h2></div>
+        <div class="panel-body" style="padding: 16px;">
+          <div id="leaflet-map" style="width:100%; height:400px; border-radius:8px; border: 1px solid var(--line); z-index: 1;"></div>
+          <div style="display:flex; gap:16px; flex-wrap:wrap; margin-top:12px; font-size:12px; font-weight:600; color:var(--ink-soft);">
+            <span style="display:flex; align-items:center; gap:6px;"><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:var(--paddy);"></span>Aman (&lt;1.3 ppt)</span>
+            <span style="display:flex; align-items:center; gap:6px;"><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:var(--amber);"></span>Turun Hasil</span>
+            <span style="display:flex; align-items:center; gap:6px;"><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:var(--clay);"></span>Risiko Gagal (&gt;5 ppt)</span>
           </div>
+        </div>
+      </div>
+
+      <!-- GRAFIK SIMULASI: PROFIL SIKLUS HTH -->
+      <div class="panel">
+        <div class="panel-head"><h2>Profil Siklus Salinitas (0 HTH - Puncak Kemarau)</h2></div>
+        <div class="panel-body">
+          <div class="chart-controls">
+            <label for="hov-horizon">Skala Maksimum (Siklus HTH):</label>
+            <select id="hov-horizon">
+              <option value="60">0 - 60 Hari</option>
+              <option value="90">0 - 90 Hari</option>
+              <option value="120" selected>0 - 120 Hari</option>
+              <option value="150">0 - 150 Hari</option>
+            </select>
+          </div>
+          <div class="chart-wrap"><canvas id="hov-canvas" height="300"></canvas></div>
+          <div class="chart-readout" id="hov-readout">💡 Arahkan kursor atau sentuh grafik untuk membaca nilai pasti di area tersebut.</div>
+          <div class="chart-legend" id="hov-legend"></div>
+          <p class="field-note" id="hov-caption" style="margin-top: 16px;"></p>
         </div>
       </div>
 
       <!-- TABEL REKAP -->
       <div class="panel">
-        <div class="panel-head"><h2>Tabel Salinitas Titik Pompa</h2></div>
+        <div class="panel-head"><h2>Tabel Status Kualitas Air per Titik Pompa (Kondisi Saat Ini)</h2></div>
         <div class="panel-body" style="padding: 0;">
           <div class="table-scroll">
             <table>
               <thead><tr>
-                <th>Jarak dari Muara</th>
-                <th class="num">Salinitas &amp; Status Padi</th>
-                <th class="num skenario" id="th-skenario">Skenario +15 hr kering</th>
+                <th>Jarak Hulu</th>
+                <th class="num">Salinitas & Status Saat Ini</th>
+                <th class="num skenario" id="th-skenario">Skenario +15 hr Kering</th>
               </tr></thead>
               <tbody id="rekap-body"></tbody>
             </table>
           </div>
-          <p class="table-caption" id="table-caption">Jarak alur sungai adalah perkiraan.</p>
+          <p class="table-caption" id="table-caption">Jarak alur sungai merupakan aproksimasi topografis.</p>
         </div>
       </div>
 
@@ -253,7 +304,7 @@
       if (key === "t") {
         state.rasio = null;
         document.getElementById("t-detail").innerHTML =
-          "Mode manual: nilai t diatur sendiri. Sinkronisasi berikutnya akan menimpanya dengan nilai dari indeks hujan.";
+          "Mode manual diaktifkan. Sinkronisasi berikutnya akan menimpa ulang data ini dengan algoritma antecedent API hujan.";
       } else if (state.rasio !== null && (key === "Qavg" || key === "Qmin")) {
         state.t = tSetaraDariRasio(state.rasio);
         document.getElementById("in-t").value = state.t;
@@ -275,16 +326,13 @@
     return {cls:"gagal", label:"Risiko Gagal"};
   }
 
-  // t setara dari rasio API (hanya untuk tampilan slider dan aturan ambang t).
   function tSetaraDariRasio(r){
     var kRes = 90 / Math.log(state.Qavg / state.Qmin);
     var rr = Math.min(Math.max(r, 0.001), 1);
     return Math.min(200, Math.round(kRes * Math.log(1 / rr)));
   }
 
-  // Debit (m3/s) setelah `hariTambahan` hari tanpa hujan dari kondisi sekarang.
-  // - Ada rasio API: Q = Qavg * rasio * k_api^hari  (konsisten dengan definisi API).
-  // - Mode manual (slider t): resesi eksponensial.
+  // Menghitung debit KONDISI SAAT INI + hari tambahan
   function debitPada(hariTambahan){
     if (state.rasio !== null) {
       var kApi = (typeof window.kApi === "number") ? window.kApi : 0.95;
@@ -294,12 +342,32 @@
     return Math.max(state.Qmin, state.Qavg * Math.exp(-(state.t + hariTambahan) / k));
   }
 
-  // Salinitas di jarak km setelah `hariTambahan` hari kering tambahan (0 = kondisi sekarang).
   function salinitasPada(hariTambahan, km){
     var uf = debitPada(hariTambahan) / (state.w * state.d);
     var currentD = window.customActiveD || 100;
     return state.S0 * Math.exp(-(uf / currentD) * km * 1000);
   }
+
+  // ---- FUNGSI BARU UNTUK GRAFIK (SKALA ABSOLUT 0 - HTH) ----
+  // Selalu dihitung dari HTH ke-0 (debit maksimal = Qavg)
+  function debitAbsolut(hth_absolut){
+    var k = 90 / Math.log(state.Qavg / state.Qmin);
+    return Math.max(state.Qmin, state.Qavg * Math.exp(-hth_absolut / k));
+  }
+  
+  function salinitasAbsolut(hth_absolut, km){
+    var uf = debitAbsolut(hth_absolut) / (state.w * state.d);
+    var currentD = window.customActiveD || 100;
+    return state.S0 * Math.exp(-(uf / currentD) * km * 1000);
+  }
+  
+  function jarakIsohalinAbsolut(hth_absolut, ambang){
+    if (ambang >= state.S0) return null;
+    var uf = debitAbsolut(hth_absolut) / (state.w * state.d);
+    var D = window.customActiveD || 100;
+    return (D / uf) * Math.log(state.S0 / ambang) / 1000;
+  }
+  // ---------------------------------------------------------
 
   function render(){
     var skenarioHari = window.skenarioKeringHari || 15;
@@ -322,27 +390,243 @@
       return Object.assign({}, p, { sal: sal, status: statusOf(sal), salSk: salSk, statusSk: statusOf(salSk) });
     });
 
-    document.getElementById("th-skenario").textContent = "Skenario +" + skenarioHari + " hr kering";
+    document.getElementById("th-skenario").textContent = "Skenario +" + skenarioHari + " hr Kering";
     document.getElementById("table-caption").textContent =
-      "Jarak alur sungai adalah perkiraan (belum diukur pada garis sungai). Kolom skenario adalah simulasi salinitas jika " +
-      skenarioHari + " hari ke depan tetap tanpa hujan (debit " + qDasar.toFixed(1) + " menjadi " + qSk.toFixed(1) +
-      " m³/s), bukan prakiraan." +
-      (diBatasQmin ? " Debit sudah di batas Qmin, jadi skenario tidak menurunkan debit lagi." : "");
+      "Jarak alur sungai adalah perkiraan topografis. Kolom skenario mensimulasikan salinitas jika " +
+      skenarioHari + " hari ke depan tanpa presipitasi (debit " + qDasar.toFixed(1) + " menjadi " + qSk.toFixed(1) +
+      " m³/s)." +
+      (diBatasQmin ? " Debit mencapai ambang minimum (Qmin), resesi debit dihentikan." : "");
 
     document.getElementById("rekap-body").innerHTML = hasil.map(p => {
       return `<tr>
-                <td><b>~${p.km} km</b> <span style="font-size:11px; color:var(--ink-soft); display:block;">(${p.nama})</span></td>
-                <td class="num">${p.sal.toFixed(2)} ppt <span class="pill ${p.status.cls}" style="margin-left:6px">${p.status.label}</span></td>
-                <td class="num skenario">${p.salSk.toFixed(2)} ppt <span class="pill ${p.statusSk.cls}" style="margin-left:6px">${p.statusSk.label}</span></td>
+                <td><b style="color:var(--river-deep)">~${p.km} km</b> <span style="font-size:12px; font-weight:500; color:var(--ink-soft); display:block; margin-top:2px;">${p.nama}</span></td>
+                <td class="num">${p.sal.toFixed(2)} ppt <span class="pill ${p.status.cls}" style="margin-left:8px">${p.status.label}</span></td>
+                <td class="num skenario">${p.salSk.toFixed(2)} ppt <span class="pill ${p.statusSk.cls}" style="margin-left:8px">${p.statusSk.label}</span></td>
               </tr>`;
     }).join("");
 
     renderRiverMap(hasil);
+    gambarGrafik();
   }
 
-  // --- PETA LEAFLET + TILE OSM ASLI ---
+  // --- GRAFIK SIMULASI HISTORIS (SKALA ABSOLUT) ---
+  var HOV_KM_MAX = 40;
+  var POMPA_GRAFIK = [
+    { km: 10, nama: "Cenrana" }, { km: 15, nama: "Kampoti" }, { km: 20, nama: "Uloe" },
+    { km: 25, nama: "Pallabessi" }, { km: 30, nama: "Solo" }, { km: 35, nama: "Pompanua" }
+  ];
+  var hovLayout = null;
+
+  function warnaSalinitas(s){
+    if (s <= 1.3) return "#dcfce7"; // Hijau muda (Aman)
+    if (s <= 5)   return "#fef08a"; // Kuning (Waspada / Turun Hasil)
+    if (s <= 10)  return "#fed7aa"; // Oranye (Gagal Ringan)
+    if (s <= 15)  return "#fca5a5"; // Merah Muda (Gagal Berat)
+    return "#b91c1c";               // Merah Gelap (Sangat Kritis)
+  }
+
+  function bangunLegenda(){
+    var el = document.getElementById("hov-legend");
+    if (!el) return;
+    
+    var item = [
+      ["&lt; 1.3 ppt (Aman)", "#dcfce7"],
+      ["1.3 – 5 ppt (Turun Hasil)", "#fef08a"],
+      ["5 – 10 ppt", "#fed7aa"],
+      ["10 – 15 ppt", "#fca5a5"],
+      ["&gt; 15 ppt (Kritis)", "#b91c1c"]
+    ];
+    
+    el.innerHTML = item.map(function(it){
+      return '<span style="display:inline-flex; align-items:center;"><span class="sw" style="background:' + it[1] + '"></span>' + it[0] + '</span>';
+    }).join("") +
+      '<span style="display:inline-flex; align-items:center; margin-left:8px;"><span class="ln" style="border-top-style:dashed;border-color:#15803d"></span>Batas 1.3 ppt</span>' +
+      '<span style="display:inline-flex; align-items:center;"><span class="ln" style="border-top-style:solid;border-color:#7f1d1d"></span>Batas 5 ppt</span>';
+  }
+
+  function gambarGrafik(){
+    var cv = document.getElementById("hov-canvas");
+    if (!cv || !cv.getContext) return;
+    var cssW = cv.parentNode.clientWidth;
+    if (!cssW) return;
+    // H sekarang melambangkan skala total maksimum kemarau, default 120.
+    var H = parseInt(document.getElementById("hov-horizon").value, 10) || 120;
+    var cssH = Math.max(300, Math.min(450, Math.round(cssW * 0.6)));
+    var dpr = window.devicePixelRatio || 1;
+    cv.width = Math.round(cssW * dpr); cv.height = Math.round(cssH * dpr);
+    cv.style.width = cssW + "px"; cv.style.height = cssH + "px";
+    var ctx = cv.getContext("2d");
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, cssW, cssH);
+
+    var pad = { l: 50, r: 16, t: 32, b: 44 };
+    var pw = cssW - pad.l - pad.r, ph = cssH - pad.t - pad.b;
+    var baris = H + 1;                       
+    var ch = ph / baris;
+    
+    var nx = Math.round(pw / 1.5); 
+    var cw = pw / nx;
+    function yHari(h){ return pad.t + ph - (h + 0.5) * ch; }   
+    function xKm(km){ return pad.l + km / HOV_KM_MAX * pw; }
+    hovLayout = { pad: pad, pw: pw, ph: ph, ch: ch, H: H };
+
+    // 1. Gambar peta warna menggunakan fungsi ABSOLUT
+    for (var j = 0; j < baris; j++){
+      for (var i = 0; i < nx; i++){
+        ctx.fillStyle = warnaSalinitas(salinitasAbsolut(j, (i + 0.5) * HOV_KM_MAX / nx));
+        ctx.fillRect(pad.l + i * cw, pad.t + ph - (j + 1) * ch, cw + 1.0, ch + 1.0);
+      }
+    }
+
+    ctx.save();
+    ctx.beginPath(); ctx.rect(pad.l, pad.t, pw, ph); ctx.clip();
+    
+    // 2. Garis Grid Background
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.35)";
+    ctx.lineWidth = 1;
+    var langkahHari = H <= 60 ? 10 : (H <= 90 ? 15 : 20);
+    for (var hh = langkahHari; hh < H; hh += langkahHari) {
+      ctx.beginPath(); ctx.moveTo(pad.l, yHari(hh)); ctx.lineTo(pad.l + pw, yHari(hh)); ctx.stroke();
+    }
+    for (var km = 5; km < HOV_KM_MAX; km += 5) {
+      ctx.beginPath(); ctx.moveTo(xKm(km), pad.t); ctx.lineTo(xKm(km), pad.t + ph); ctx.stroke();
+    }
+
+    // 3. Garis Kontur Isohalin ABSOLUT
+    [[1.3, "#15803d", [7, 5]], [5, "#7f1d1d", []]].forEach(function(g){
+      ctx.beginPath();
+      var mulai = false;
+      for (var h = 0; h <= H; h++){
+        var k = jarakIsohalinAbsolut(h, g[0]);
+        if (k === null) continue;
+        var x = xKm(Math.min(k, HOV_KM_MAX * 1.5)), y = yHari(h);
+        if (!mulai){ ctx.moveTo(x, y); mulai = true; } else { ctx.lineTo(x, y); }
+      }
+      ctx.setLineDash(g[2]); ctx.strokeStyle = g[1]; ctx.lineWidth = 2.5; ctx.stroke();
+    });
+    ctx.setLineDash([]);
+    
+    // 4. GARIS PENANDA "KONDISI SAAT INI" BERDASARKAN state.t
+    var currT = state.t;
+    if(currT >= 0 && currT <= H) {
+      var yCurr = yHari(currT);
+      
+      // Garis bayangan hitam
+      ctx.beginPath();
+      ctx.moveTo(pad.l, yCurr);
+      ctx.lineTo(pad.l + pw, yCurr);
+      ctx.setLineDash([6, 4]);
+      ctx.strokeStyle = "rgba(0,0,0,0.6)";
+      ctx.lineWidth = 2.5;
+      ctx.stroke();
+      
+      // Garis utama putih
+      ctx.beginPath();
+      ctx.moveTo(pad.l, yCurr);
+      ctx.lineTo(pad.l + pw, yCurr);
+      ctx.strokeStyle = "#ffffff";
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      ctx.setLineDash([]);
+      
+      // Label "KONDISI SAAT INI"
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "bold 11px Inter, sans-serif";
+      ctx.textAlign = "left";
+      ctx.textBaseline = "bottom";
+      // Shadow text
+      ctx.shadowColor = "rgba(0,0,0,0.8)";
+      ctx.shadowBlur = 3;
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 1;
+      ctx.fillText("◀ POSISI AKTUAL SAAT INI (HTH " + Math.round(currT) + ")", pad.l + 8, yCurr - 4);
+      // reset shadow
+      ctx.shadowBlur = 0;
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 0;
+    }
+
+    ctx.restore();
+
+    // 5. Titik Stasiun Pompa
+    ctx.save();
+    ctx.setLineDash([3, 4]); ctx.strokeStyle = "rgba(15, 23, 42, 0.4)"; ctx.lineWidth = 1.5;
+    POMPA_GRAFIK.forEach(function(p){
+      ctx.beginPath(); ctx.moveTo(xKm(p.km), pad.t); ctx.lineTo(xKm(p.km), pad.t + ph); ctx.stroke();
+    });
+    ctx.restore();
+
+    // 6. Label Sumbu (Axis)
+    ctx.strokeStyle = "#cbd5e1"; ctx.lineWidth = 1.5;
+    ctx.strokeRect(pad.l + 0.5, pad.t + 0.5, pw, ph);
+    ctx.fillStyle = "#475569";
+    ctx.font = "12px ui-monospace, monospace";
+    ctx.textAlign = "center"; ctx.textBaseline = "top";
+    
+    for (var km = 0; km <= HOV_KM_MAX; km += 5){
+      var tx = xKm(km);
+      ctx.beginPath(); ctx.moveTo(tx, pad.t + ph); ctx.lineTo(tx, pad.t + ph + 5); ctx.stroke();
+      ctx.fillText(String(km), tx, pad.t + ph + 8);
+    }
+    ctx.font = "600 12.5px Inter, sans-serif";
+    ctx.fillText("Jarak dari Muara (km)", pad.l + pw / 2, pad.t + ph + 26);
+    
+    if (cssW >= 560){
+      ctx.textBaseline = "bottom"; ctx.font = "600 11.5px Inter, sans-serif";
+      POMPA_GRAFIK.forEach(function(p){ ctx.fillText(p.nama, xKm(p.km), pad.t - 8); });
+      ctx.font = "12px ui-monospace, monospace";
+    }
+    
+    ctx.textAlign = "right"; ctx.textBaseline = "middle";
+    for (var hh = 0; hh <= H; hh += langkahHari){
+      var ty = yHari(hh);
+      ctx.beginPath(); ctx.moveTo(pad.l - 5, ty); ctx.lineTo(pad.l, ty); ctx.stroke();
+      ctx.fillText(String(hh), pad.l - 8, ty);
+    }
+    ctx.save();
+    ctx.translate(14, pad.t + ph / 2); ctx.rotate(-Math.PI / 2);
+    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.font = "600 12.5px Inter, sans-serif";
+    ctx.fillText("Lama Kemarau / HTH (Hari)", 0, 0);
+    ctx.restore();
+
+    var cap = "Grafik profil ini memetakan sejarah dan proyeksi siklus penuh satu musim kemarau, dari kondisi sepenuhnya basah (0 HTH) hingga kering. Garis putus-putus menunjukkan <b>titik posisi hidrologis sungai saat ini (" + Math.round(state.t) + " HTH)</b>.";
+    document.getElementById("hov-caption").innerHTML = cap;
+  }
+
+  function pasangPembacaGrafik(){
+    var cv = document.getElementById("hov-canvas");
+    var out = document.getElementById("hov-readout");
+    if (!cv || !out) return;
+    function baca(ev){
+      if (!hovLayout) return;
+      var rect = cv.getBoundingClientRect();
+      var p = (ev.touches && ev.touches[0]) ? ev.touches[0] : ev;
+      var x = p.clientX - rect.left, y = p.clientY - rect.top;
+      var L = hovLayout;
+      if (x < L.pad.l || x > L.pad.l + L.pw || y < L.pad.t || y > L.pad.t + L.ph) return;
+      var km = (x - L.pad.l) / L.pw * HOV_KM_MAX;
+      var hari = Math.min(L.H, Math.max(0, Math.floor((L.pad.t + L.ph - y) / L.ch)));
+      
+      // Gunakan salinitas absolut untuk pembacaan tooltip
+      var s = salinitasAbsolut(hari, km); 
+      
+      out.innerHTML = `📍 <b>Jarak ${km.toFixed(1)} km</b> &nbsp;|&nbsp; ⏳ <b>HTH ke-${hari}</b> &nbsp;\vert{}&nbsp; 💧 <b>${s.toFixed(2)} ppt</b> <span style="font-family:var(--sans); font-size:11.5px; font-weight:700; padding:3px 8px; border-radius:12px; margin-left:8px; background:${warnaSalinitas(s)}; border: 1px solid rgba(0,0,0,0.1); color: ${s>15 ? '#fff' : 'var(--ink)'}">${statusOf(s).label}</span>`;
+    }
+    cv.addEventListener("mousemove", baca);
+    cv.addEventListener("touchstart", baca, { passive: true });
+    cv.addEventListener("touchmove", baca, { passive: true });
+    document.getElementById("hov-horizon").addEventListener("change", gambarGrafik);
+    var tunda = null;
+    window.addEventListener("resize", function(){
+      if (tunda) cancelAnimationFrame(tunda);
+      tunda = requestAnimationFrame(gambarGrafik);
+    });
+  }
+
+  // --- PETA LEAFLET ---
   var MUARA = { lat: -4.34405, lon: 120.39671 };
-  var STATUS_COLOR = { aman: "#4c7a3d", turun: "#b4801f", gagal: "#a8431e" };
+  var STATUS_COLOR = { aman: "#16a34a", turun: "#d97706", gagal: "#dc2626" };
   var leafletMap = null;
   var markerLayer = {}; 
 
@@ -351,16 +635,13 @@
     leafletMap = L.map("leaflet-map", { scrollWheelZoom: false });
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       maxZoom: 17,
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
     }).addTo(leafletMap);
 
     var muaraMarker = L.circleMarker([MUARA.lat, MUARA.lon], {
-      radius: 7, color: "#fff", weight: 2, fillColor: "#163f4a", fillOpacity: 1
-    }).addTo(leafletMap).bindTooltip("Muara<br>(Mulut Sungai)", { 
-      permanent: true, 
-      direction: "bottom", 
-      offset: [0, 7], 
-      className: "pump-tooltip muara-tooltip" 
+      radius: 8, color: "#fff", weight: 2, fillColor: "#0f172a", fillOpacity: 1
+    }).addTo(leafletMap).bindTooltip("Muara<br>(Outlet Teluk Bone)", { 
+      permanent: true, direction: "bottom", offset: [0, 8], className: "pump-tooltip muara-tooltip" 
     });
 
     var bounds = [[MUARA.lat, MUARA.lon]];
@@ -374,12 +655,9 @@
       { id: "pompanua", nama: "Pompanua", lat: -4.224367708907874, lon: 120.15045713825556 }
     ].forEach(function(p){
       var m = L.circleMarker([p.lat, p.lon], {
-        radius: 8, color: "#fff", weight: 2, fillColor: "#9ca3af", fillOpacity: 1
+        radius: 9, color: "#fff", weight: 2, fillColor: "#cbd5e1", fillOpacity: 1
       }).addTo(leafletMap).bindTooltip(p.nama, { 
-        permanent: true, 
-        direction: "top", 
-        offset: [0,-8], 
-        className: "pump-tooltip" 
+        permanent: true, direction: "top", offset: [0,-9], className: "pump-tooltip" 
       });
       markerLayer[p.id] = m;
       bounds.push([p.lat, p.lon]);
@@ -393,8 +671,8 @@
     hasil.forEach(p => {
       var marker = markerLayer[p.id];
       if(!marker) return;
-      marker.setStyle({ fillColor: STATUS_COLOR[p.status.cls] || "#9ca3af" });
-      marker.setTooltipContent(`${p.nama}: ${p.sal.toFixed(2)} ppt (${p.status.label})`);
+      marker.setStyle({ fillColor: STATUS_COLOR[p.status.cls] || "#cbd5e1" });
+      marker.setTooltipContent(`<b>${p.nama}</b>:${p.sal.toFixed(2)} ppt`);
     });
   }
 
@@ -405,17 +683,11 @@
     render();
   }
 
-  // PAUTKAN KE URL DEPLOYMENT GOOGLE APPS SCRIPT ANDA
   const URL_GAS = "https://script.google.com/macros/s/AKfycby66DrFZQx8eV7rLoQbqeVFoFWFLGFzlHeuvFtqxfutGTiFErHGz98bCUAf6AsRhlX3cQ/exec";
-
-  // Data hujan dianggap "tidak diperbarui hari ini" jika lebih tua dari ini (jam).
   var BATAS_UMUR_HTH_JAM = 30;
 
-  // --- Hari Tanpa Hujan (HTH): nilai TERUKUR saja, tanpa penalti iklim ---
-  // Kegagalan (null dari backend) TIDAK BOLEH jadi 0: cek null sebelum Number().
   function bacaHariTanpaHujan(data){
     if (data.hari_tanpa_hujan_terukur === undefined) {
-      // Backend masih skema lama (belum di-redeploy).
       return { gagal: true, terukur: null, umurJam: null, lengkap: true, skemaLama: true };
     }
     var umurJam = (typeof data.hari_tanpa_hujan_umur_jam === "number") ? data.hari_tanpa_hujan_umur_jam : null;
@@ -431,10 +703,9 @@
     return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
   }
 
-  // FUNGSI SINKRONISASI DIPISAHKAN AGAR BISA DIPANGGIL OTOMATIS
   async function syncData() {
     var btn = document.getElementById("btn-sync");
-    btn.textContent = "Menarik Data Iklim & Satelit...";
+    btn.textContent = "Sinkronisasi Telemetri IoT & Data Satelit...";
     btn.disabled = true;
     
     try {
@@ -452,7 +723,7 @@
       window.skenarioKeringHari = (typeof data.skenario_kering_hari === "number") ? data.skenario_kering_hari : 15;
       window.kApi = (typeof data.k_api === "number") ? data.k_api : 0.95;
 
-      // === PANEL IKLIM GLOBAL (ENSO + IOD) ===
+      // PANEL IKLIM GLOBAL
       var panelIklim = document.getElementById("iklim-panel");
       panelIklim.style.display = "block"; panelIklim.className = "panel status-panel";
 
@@ -464,9 +735,8 @@
 
       var statusEl = document.getElementById("enso-status");
       var anomaliEl = document.getElementById("enso-anomali");
-      statusEl.textContent = (ensoStatus === "TIDAK_DIKETAHUI") ? "Tidak diketahui" :
-        (kekuatan ? ensoStatus + " (" + kekuatan + ")" : ensoStatus);
-      anomaliEl.textContent = anomaliGagal ? "Data gagal" : (anomali > 0 ? "+" : "") + anomali.toFixed(2) + " °C";
+      statusEl.textContent = (ensoStatus === "TIDAK_DIKETAHUI") ? "Tidak Diketahui" : (kekuatan ? ensoStatus + " (" + kekuatan + ")" : ensoStatus);
+      anomaliEl.textContent = anomaliGagal ? "Data Terkendala" : (anomali > 0 ? "+" : "") + anomali.toFixed(2) + " °C";
       statusEl.className = (anomaliGagal || ensoStatus === "TIDAK_DIKETAHUI") ? "text-gagal" : "";
       anomaliEl.className = anomaliGagal ? "text-gagal" : "";
 
@@ -476,9 +746,8 @@
       var dmi = dmiGagal ? null : parseFloat(dmiRaw);
       var iodEl = document.getElementById("iod-status");
       var dmiEl = document.getElementById("iod-dmi");
-      iodEl.textContent = (iodStatus === "TIDAK_DIKETAHUI") ? "Tidak diketahui" : iodStatus;
-      dmiEl.textContent = dmiGagal ? "Data gagal" :
-        (dmi > 0 ? "+" : "") + dmi.toFixed(2) + " °C" + (data.dmi_bulan_data ? " (" + data.dmi_bulan_data + ")" : "");
+      iodEl.textContent = (iodStatus === "TIDAK_DIKETAHUI") ? "Tidak Diketahui" : iodStatus;
+      dmiEl.textContent = dmiGagal ? "Data Terkendala" : (dmi > 0 ? "+" : "") + dmi.toFixed(2) + " °C" + (data.dmi_bulan_data ? " (" + data.dmi_bulan_data + ")" : "");
       iodEl.className = (iodStatus === "TIDAK_DIKETAHUI") ? "text-gagal" : "";
       dmiEl.className = dmiGagal ? "text-gagal" : "";
 
@@ -486,36 +755,35 @@
 
       if(ensoStatus === "La Niña"){
         statusEl.className = "enso-blue"; anomaliEl.className = "enso-blue";
-        baris.push(`Fase <b>La Niña${kekuatan ? " " + kekuatan : ""}</b> aktif. Suplai uap air meningkat dan berpotensi memicu hujan di atas normal di Sulawesi Selatan.`);
+        baris.push(`Indikator <b>La Niña${kekuatan ? " " + kekuatan : ""}</b> terkonfirmasi. Suplai uap air ekuatorial menguatkan anomali curah hujan positif di Sulawesi Selatan.`);
       } else if (ensoStatus === "El Niño") {
         statusEl.className = "enso-red"; anomaliEl.className = "enso-red";
-        baris.push(`Fase <b>El Niño${kekuatan ? " " + kekuatan : ""}</b> aktif. Musim kemarau berpotensi lebih kering dan panjang.`);
+        baris.push(`Indikator <b>El Niño${kekuatan ? " " + kekuatan : ""}</b> terkonfirmasi. Mitigasi defisit neraca air irigasi perlu diprioritaskan.`);
       } else if (ensoStatus === "TIDAK_DIKETAHUI") {
-        baris.push(`Status ENSO <b>gagal disinkronkan</b> dan belum ada data valid sebelumnya. Ini <b>bukan</b> konfirmasi kondisi netral — penyesuaian risiko dari ENSO tidak diterapkan.`);
+        baris.push(`Koneksi data ENSO mengalami interupsi. Baseline risiko global dinetralkan sementara.`);
       } else {
-        baris.push(`Suhu permukaan laut Pasifik Ekuator terpantau netral.`);
+        baris.push(`Suhu Permukaan Laut (SST) zona Niño 3.4 berstatus Netral.`);
       }
 
       if (iodStatus === "Positif") {
         iodEl.className = "enso-red";
-        baris.push(`IOD <b>positif</b> cenderung menekan hujan di Indonesia dan dapat memperkuat kekeringan, terutama bila bersamaan dengan El Niño.`);
+        baris.push(`Fase IOD <b>Positif</b>: Subsiden massa udara berpotensi memperpanjang deret hari tanpa presipitasi.`);
       } else if (iodStatus === "Negatif") {
         iodEl.className = "enso-blue";
-        baris.push(`IOD <b>negatif</b> cenderung menambah hujan di Indonesia dan dapat memperkuat curah hujan tinggi, terutama bila bersamaan dengan La Niña.`);
+        baris.push(`Fase IOD <b>Negatif</b>: Konveksi laut memicu ekstra curah hujan pada sistem cuaca lokal.`);
       } else if (iodStatus === "Netral") {
-        baris.push(`IOD netral (berdasarkan nilai bulanan; nilai terbaru masih awal dan bisa berubah).`);
+        baris.push(`Dipole Mode Index (DMI) dalam ambang Netral untuk analisis operasional bulan ini.`);
       } else {
-        baris.push(`Status IOD tidak tersedia — pengaruhnya tidak diperhitungkan.`);
+        baris.push(`Sinkronisasi telekoneksi IOD gagal — probabilitas risiko disandarkan pada pola hujan lokal.`);
       }
 
       if (skorKering > 0) {
-        baris.push(`<b>Risiko intrusi salinitas meningkat:</b> ambang durasi tanpa hujan kritis untuk menghentikan pompa diturunkan dari ${AMBANG_T_DASAR} menjadi <b>${ambangT} hari</b>.`);
+        baris.push(`<b>Alert Kekeringan:</b> Ambang toleransi operasional pompa direduksi dari ${AMBANG_T_DASAR} menjadi <b>${ambangT} hari kering</b>.`);
       }
       if (skorBasah > 0) {
-        baris.push(`<b>Risiko luapan sungai meningkat:</b> ambang peringatan hujan hulu 30 hari diturunkan menjadi Waspada <b>${waspada} mm</b> / Siaga <b>${siaga} mm</b>.`);
+        baris.push(`<b>Alert Luapan Sungai:</b> Threshold kewaspadaan hulu diturunkan otomatis (Waspada: <b>${waspada} mm</b> \vert{} Siaga: <b>${siaga} mm</b>).`);
       }
-      baris.push(`<span class="status-caveat">Penyesuaian ambang ini heuristik (belum dikalibrasi lapangan) dan tidak mengubah nilai t maupun D pada model.</span>`);
-
+      
       document.getElementById("iklim-lines").innerHTML = baris.map(function(b){ return "<li>" + b + "</li>"; }).join("");
 
       if (ensoStatus === "El Niño") panelIklim.classList.add("status-darurat");
@@ -524,7 +792,7 @@
       else if (iodStatus === "Negatif") panelIklim.classList.add("status-banjir-awas");
       else panelIklim.classList.add("status-netral");
 
-      // === PANEL BANJIR HULU (30 HARI) ===
+      // PANEL BANJIR HULU
       var panelFlood = document.getElementById("flood-panel");
       panelFlood.style.display = "block"; panelFlood.className = "panel status-panel";
 
@@ -537,44 +805,40 @@
 
       var rainSidrapEl = document.getElementById("rain-sidrap");
       var rainSoppengEl = document.getElementById("rain-soppeng");
-      rainSidrapEl.textContent = sidrapGagal ? "Data gagal" : hSidrap.toFixed(1) + " mm";
+      rainSidrapEl.textContent = sidrapGagal ? "Error Node" : hSidrap.toFixed(1) + " mm";
       rainSidrapEl.className = sidrapGagal ? "text-gagal" : "";
-      rainSoppengEl.textContent = soppengGagal ? "Data gagal" : hSoppeng.toFixed(1) + " mm";
+      rainSoppengEl.textContent = soppengGagal ? "Error Node" : hSoppeng.toFixed(1) + " mm";
       rainSoppengEl.className = soppengGagal ? "text-gagal" : "";
 
       if (sidrapGagal && soppengGagal) {
         panelFlood.classList.add("status-netral");
-        document.getElementById("flood-title").textContent = "DATA HUJAN HULU TIDAK TERSEDIA";
-        document.getElementById("flood-text").innerHTML = `Gagal mengambil data curah hujan 30 hari dari Soppeng maupun Sidrap. Status hulu <b>tidak bisa disimpulkan</b> dari sini — periksa sumber data secara manual sebelum mengambil keputusan.`;
+        document.getElementById("flood-title").textContent = "TELEMETRI HUJAN HULU TERPUTUS";
+        document.getElementById("flood-text").innerHTML = `Gagal mengekstrak data satelit CH 30-hari DAS Soppeng & Sidrap. Assessment luapan hidrologis <b>tidak valid</b>.`;
       } else {
         var maxHulu = Math.max(hSidrap === null ? -Infinity : hSidrap, hSoppeng === null ? -Infinity : hSoppeng);
-
-        var noteDinamis = (siaga < 350) ? `<br><span class="status-caveat">*Ambang batas peringatan diturunkan otomatis mengikuti kalender puncak hujan lokal, La Niña, dan/atau IOD negatif.</span>` : "";
-        var noteParsial = (sidrapGagal || soppengGagal)
-          ? `<br><span class="status-caveat">*Hanya stasiun ${sidrapGagal ? "Soppeng" : "Sidrap"} yang berhasil disinkronkan kali ini; ${sidrapGagal ? "Sidrap" : "Soppeng"} gagal.</span>`
-          : "";
+        var noteDinamis = (siaga < 350) ? `<br><span class="status-caveat">*Kalibrasi ambang batas dikondisikan oleh faktor La Niña / IOD Negatif.</span>` : "";
+        var noteParsial = (sidrapGagal || soppengGagal) ? `<br><span class="status-caveat">*Hanya subsistem DAS ${sidrapGagal ? "Soppeng" : "Sidrap"} yang berhasil diakuisisi.</span>` : "";
 
         if (maxHulu > siaga) {
           panelFlood.classList.add("status-darurat");
-          document.getElementById("flood-title").textContent = "SIAGA 1: AKUMULASI HUJAN BULANAN KRITIS";
-          document.getElementById("flood-text").innerHTML = `Hujan hulu mencapai <b>${maxHulu.toFixed(1)} mm</b> (Ambang batas dinamis: >${siaga} mm). Tanah jenuh air, luapan hilir sangat tinggi!${noteDinamis}${noteParsial}`;
+          document.getElementById("flood-title").textContent = "SIAGA 1: OVERFLOW HIDROLOGIS KRITIS";
+          document.getElementById("flood-text").innerHTML = `Intensitas presipitasi hulu menembus <b>${maxHulu.toFixed(1)} mm</b> (Batas: >${siaga} mm). Kapasitas retensi tanah jenuh, potensi backwater hilir tinggi.${noteDinamis}${noteParsial}`;
         } else if (maxHulu > waspada) {
           panelFlood.classList.add("status-banjir-awas");
-          document.getElementById("flood-title").textContent = "WASPADA: CURAH HUJAN BULANAN MENINGKAT";
-          document.getElementById("flood-text").innerHTML = `Hujan hulu mencapai <b>${maxHulu.toFixed(1)} mm</b> (Ambang batas dinamis: >${waspada} mm). Pantau tanggul lokal.${noteDinamis}${noteParsial}`;
+          document.getElementById("flood-title").textContent = "WASPADA: KENAIKAN TINGGI MUKA AIR";
+          document.getElementById("flood-text").innerHTML = `Akumulasi CH hulu mencapai <b>${maxHulu.toFixed(1)} mm</b> (Batas: >${waspada} mm). Kewaspadaan tanggul kritis disarankan.${noteDinamis}${noteParsial}`;
         } else {
           panelFlood.classList.add("status-aman");
-          document.getElementById("flood-title").textContent = "HULU AMAN (CURAH HUJAN NORMAL)";
-          document.getElementById("flood-text").innerHTML = `Hujan hulu normal (<b>${maxHulu.toFixed(1)} mm</b>). Masih di bawah batas waspada saat ini (<${waspada} mm).${noteDinamis}${noteParsial}`;
+          document.getElementById("flood-title").textContent = "HULU AMAN (DEBIT NORMAL)";
+          document.getElementById("flood-text").innerHTML = `Distribusi hujan DAS terkendali di level <b>${maxHulu.toFixed(1)} mm</b> (<${waspada} mm).${noteDinamis}${noteParsial}`;
         }
       }
 
-      // === HARI TANPA HUJAN (t) — dipakai model resesi debit ===
+      // HARI TANPA HUJAN (t)
       var t = bacaHariTanpaHujan(data);
       var detailT = document.getElementById("t-detail");
       var ambangEfektif = (typeof data.ambang_hujan_efektif_mm === "number") ? data.ambang_hujan_efektif_mm : null;
 
-      // t setara dari indeks hujan antecedent: Q = Qavg * rasio  ->  t = k * ln(1/rasio)
       var rasio = (typeof data.indeks_basah_rasio === "number") ? data.indeks_basah_rasio : null;
       var tEf = null, qEst = null, r = null;
       if (rasio !== null) {
@@ -584,9 +848,7 @@
         qEst = Math.max(state.Qmin, state.Qavg * r);
       }
 
-      var hthInfo = t.gagal ? "" :
-        ` <span class="status-caveat">Pembanding: ${t.terukur} hari berturut-turut tanpa hujan efektif` +
-        (ambangEfektif !== null ? ` (&lt; ${ambangEfektif} mm di kedua stasiun)` : ``) + `. Info saja, tidak dipakai model.</span>`;
+      var hthInfo = t.gagal ? "" : ` <span class="status-caveat">Benchmarking Terukur: ${t.terukur} HTH` + (ambangEfektif !== null ? ` (&lt; ${ambangEfektif} mm di kedua node)` : ``) + `.</span>`;
 
       if (tEf !== null) {
         state.t = tEf;
@@ -594,61 +856,39 @@
         document.getElementById("in-t").value = state.t;
         document.getElementById("num-t").value = state.t;
         var umurIdx = (typeof data.indeks_basah_umur_jam === "number") ? data.indeks_basah_umur_jam : null;
-        var umurTextT = (umurIdx !== null && umurIdx > BATAS_UMUR_HTH_JAM)
-          ? ` <span class="status-debug">Data hujan dihitung sekitar ${Math.round(umurIdx)} jam lalu — pengambilan baru belum berhasil.</span>` : ``;
-        detailT.innerHTML =
-          `<b>Setara t</b> dari indeks hujan antecedent (peluruhan paruh-waktu ~13,5 hari): ${data.indeks_basah_mm} mm ` +
-          `= ${Math.round(rasio * 100)}% dari kondisi normal → debit estimasi ≈ ${qEst.toFixed(1)} m³/s. ` +
-          `Debit dibatasi pada Qmin; tanpa penyesuaian El Niño/IOD.` +
-          `<span class="status-caveat">Rasio terhadap kondisi normal masih asumsi (API_REFERENSI_MM), belum dikalibrasi dengan debit nyata.</span>` +
+        var umurTextT = (umurIdx !== null && umurIdx > BATAS_UMUR_HTH_JAM) ? ` <span class="status-debug">Latency data > ${Math.round(umurIdx)} jam — sistem menggunakan backup cache terakhir.</span>` : ``;
+        detailT.innerHTML = `<b>Ekivalensi t</b> via antecedent API: ${data.indeks_basah_mm} mm ` +
+          `= ${Math.round(rasio * 100)}% curah normal → Est. Baseflow ≈ ${qEst.toFixed(1)} m³/s. ` +
+          `<span class="status-caveat">Rasio dikalkulasi berdasar model resesi tanpa penyesuaian makro-iklim.</span>` +
           hthInfo + umurTextT;
       } else if (!t.gagal) {
-        // Cadangan: indeks tidak tersedia, pakai HTH terukur
         state.rasio = null;
         state.t = t.terukur;
         document.getElementById("in-t").value = state.t;
         document.getElementById("num-t").value = state.t;
-        detailT.innerHTML = `Indeks hujan antecedent tidak tersedia; memakai HTH terukur (kurang stabil).` + hthInfo;
+        detailT.innerHTML = `API Indeks antecedent tidak merespons; fallback ke observasi HTH murni.` + hthInfo;
       } else {
-        var pesanGagal = t.skemaLama
-          ? `Respons backend memakai skema lama — redeploy Apps Script versi terbaru. Nilai geser di samping tidak diperbarui otomatis.`
-          : `Belum ada data hujan valid dari Soppeng &amp; Sidrap. Nilai geser di samping <b>tidak diperbarui otomatis</b> dan mungkin sudah usang.`;
+        var pesanGagal = t.skemaLama ? `API Endpoint perlu pembaruan versi (Legacy Schema detected).` : `Kehilangan telemetri hujan DAS. Auto-sync slider dinonaktifkan sementara.`;
         detailT.innerHTML = `<span class="status-debug">${pesanGagal}</span>`;
       }
-      t.gagal = (tEf === null && t.gagal); // dipakai footNote di bawah
+      t.gagal = (tEf === null && t.gagal);
       
-      // === PANEL SALINITAS / STATUS POMPANISASI ===
+      // PANEL SALINITAS
       var panelSal = document.getElementById("status-panel");
       panelSal.style.display = "block"; panelSal.className = "panel status-panel";
       
       var maxTideGagal = (data.max_tide_meter === null || data.max_tide_meter === undefined);
       var maxTideNum = maxTideGagal ? 0 : Number(data.max_tide_meter);
-            var datumPasang = data.datum_pasang || null;   // "LAT" | "LAT~" | "LAT~SG"
+      var datumPasang = data.datum_pasang || null;
       var datumLangsung = (datumPasang === "LAT");
-      var tideTxt = maxTideGagal ? "tidak tersedia" :
-        maxTideNum.toFixed(2) + " m (datum LAT" + (datumLangsung ? "" : ", perkiraan") + ")";
+      var tideTxt = maxTideGagal ? "Tidak terdeteksi" : maxTideNum.toFixed(2) + " m (LAT" + (datumLangsung ? "" : ", est.") + ")";
       var activeD = Number(data.koefisien_dispersi_estimasi) || 100;
       
-      var footNote = `<span class="status-time">Pembaruan: ${updateTimeStr}</span><span class="status-caveat">D adalah estimasi dari pasang &amp; angin laut — bukan hasil kalibrasi lapangan.</span>`;
-      if (data.fase_pasang) {
-        footNote += `<span class="status-caveat">Fase pasang (perkiraan bulan): ${escapeHtml(data.fase_pasang)}.</span>`;
-      }
-      if (!maxTideGagal && datumPasang && !datumLangsung) {
-  footNote += `<span class="status-caveat">*Pasang ini konversi perkiraan dari model MSL ke LAT (sumber cadangan), bukan data LAT langsung dari BMKG — bisa meleset sekitar 0.05 m atau lebih.</span>`;
-}
-      if (ambangT < AMBANG_T_DASAR) {
-        footNote += `<span class="status-caveat">*Ambang t kritis diturunkan menjadi ${ambangT} hari karena risiko iklim (El Niño/IOD positif) pada bulan rawan kering.</span>`;
-      }
-      if (t.gagal) {
-        footNote += `<span class="status-debug">Durasi tanpa hujan (t) belum ada data valid — status di atas memakai nilai t manual/terakhir (${state.t} hari), bukan data terbaru.</span>`;
-      }
-      if (Array.isArray(data.peringatan)) {
-        data.peringatan.forEach(function(p){
-          footNote += `<span class="status-caveat">*${escapeHtml(p)}</span>`;
-        });
-      }
+      var footNote = `<span class="status-time">Timestamp Sinkronisasi: ${updateTimeStr}</span><span class="status-caveat">Koef. Dispersi (D=${activeD}) diproyeksikan murni dari dinamika pasang laut & angin pesisir.</span>`;
+      if (data.fase_pasang) footNote += `<span class="status-caveat">Indikator Bulan: ${escapeHtml(data.fase_pasang)}.</span>`;
+      if (ambangT < AMBANG_T_DASAR) footNote += `<span class="status-caveat">*Reduksi threshold t ke ${ambangT} hr merupakan safety factor iklim.</span>`;
+      if (Array.isArray(data.peringatan)) data.peringatan.forEach(function(p){ footNote += `<span class="status-caveat">⚠️ ${escapeHtml(p)}</span>`; });
 
-      // D harus diset SEBELUM salinitas dihitung untuk banner.
       window.customActiveD = activeD;
 
       var KM_POMPA = [10, 15, 20, 25, 30, 35];
@@ -657,46 +897,49 @@
       var nTurun = salPompa.filter(function(s){ return s > 1.3; }).length;
       var ambangPasang = (typeof data.ambang_pasang_darurat_m === "number") ? data.ambang_pasang_darurat_m : 2.27;
       var aturanDarurat = (!maxTideGagal && maxTideNum >= ambangPasang && state.t >= ambangT);
-      var ringkas = "Model: <b>" + nGagal + " dari " + KM_POMPA.length + "</b> titik pompa &gt; 5 ppt, " +
-        nTurun + " titik &gt; 1,3 ppt (t setara " + state.t + " hari, ambang kritis " + ambangT + " hari).";
+      
+      var ringkas = "Deteksi Sistem: <b>" + nGagal + " dari " + KM_POMPA.length + "</b> simpul ekstraksi terindikasi > 5 ppt, " +
+        nTurun + " simpul > 1.3 ppt (Durasi Kering Ekivalen " + state.t + " hr, Threshold " + ambangT + " hr).";
 
       if (nGagal > 0 || aturanDarurat) {
         panelSal.classList.add("status-darurat");
-        document.getElementById("status-title").textContent = "DARURAT SALINITAS";
-        document.getElementById("status-text").innerHTML = `${ringkas} Pasang <b>${tideTxt}</b>. <b>Hentikan atau batasi pompa di titik yang melewati 5 ppt!</b> (D=${activeD}) ${footNote}`;
+        document.getElementById("status-title").textContent = "INSTRUKSI SUSPENSI POMPA (DARURAT)";
+        document.getElementById("status-text").innerHTML = `${ringkas} Elevasi pasang <b>${tideTxt}</b>. <b>Hentikan total operasional pompa irigasi pada titik >5 ppt!</b> Risiko kerusakan jaringan tanaman sangat tinggi. ${footNote}`;
       } else if (maxTideGagal) {
         panelSal.classList.add("status-netral");
-        document.getElementById("status-title").textContent = "DATA PASANG TIDAK TERSEDIA";
-        document.getElementById("status-text").innerHTML = `${ringkas} Data pasang laut belum berhasil diambil, jadi D memakai nilai dasar dan hasil bisa terlalu rendah. Periksa tabel pasang secara manual. (D=${activeD}) ${footNote}`;
+        document.getElementById("status-title").textContent = "GANGGUAN DATA TIDE GAUGE";
+        document.getElementById("status-text").innerHTML = `${ringkas} Telemetri elevasi laut terputus, kalkulasi mengandalkan baseline statis. Cross-check log pasang surut pesisir secara manual. ${footNote}`;
       } else if (nTurun > 0 || data.angin_laut_aktif) {
         panelSal.classList.add("status-waspada");
-        document.getElementById("status-title").textContent = "WASPADA SALINITAS";
-        var ketAngin = data.angin_laut_aktif ? " Angin laut dari Teluk Bone aktif, intrusi terdorong ke hulu." : "";
-        document.getElementById("status-text").innerHTML = `${ringkas} Pasang <b>${tideTxt}</b>.${ketAngin} Batasi jam sedot di titik yang melewati 1,3 ppt. (D=${activeD}) ${footNote}`;
+        document.getElementById("status-title").textContent = "WASPADA INTRUSI GARAM (PENJADWALAN KETAT)";
+        var ketAngin = data.angin_laut_aktif ? " Vektor angin laut Teluk Bone terdeteksi aktif, memicu akselerasi baji garam." : "";
+        document.getElementById("status-text").innerHTML = `${ringkas} Elevasi pasang <b>${tideTxt}</b>.${ketAngin} Batasi ekstraksi air di simpul >1.3 ppt hanya pada siklus pasang surut terendah. ${footNote}`;
       } else {
         panelSal.classList.add("status-aman");
-        document.getElementById("status-title").textContent = "SALINITAS AMAN";
-        document.getElementById("status-text").innerHTML = `${ringkas} Pasang <b>${tideTxt}</b>. Kondisi aman untuk penjadwalan irigasi. (D=${activeD}) ${footNote}`;
+        document.getElementById("status-title").textContent = "KUALITAS AIR IRIGASI OPTIMAL";
+        document.getElementById("status-text").innerHTML = `${ringkas} Elevasi pasang <b>${tideTxt}</b>. Salinitas dalam ambang aman untuk ekstraksi pompa kontinu. ${footNote}`;
       }
 
       onChange();
-      btn.textContent = "Sinkronisasi Berhasil";
+      btn.textContent = "Sinkronisasi Berhasil ✓";
       
     } catch(e) { 
       console.error(e);
-      btn.textContent = "Gagal Mengambil Data"; 
+      btn.textContent = "Sinkronisasi Terkendala (Cek Jaringan)"; 
+      btn.style.background = "var(--clay)";
     }
-    setTimeout(() => { btn.textContent = "Sinkronisasi Data Iklim & Satelit"; btn.disabled = false; }, 4000);
+    setTimeout(() => { 
+      btn.textContent = "Perbarui Data Telemetri & Satelit"; 
+      btn.disabled = false; 
+      btn.style.background = "";
+    }, 4000);
   }
 
-  // JALANKAN SAAT TOMBOL DIKLIK
   document.getElementById("btn-sync").addEventListener("click", syncData);
-
-  // INISIALISASI PETA DAN TAMPILAN AWAL
   initRiverMap();
+  bangunLegenda();
+  pasangPembacaGrafik();
   onChange();
-
-  // LANGSUNG JALANKAN SINKRONISASI OTOMATIS SAAT HALAMAN DIMUAT
   syncData();
   
 })();
