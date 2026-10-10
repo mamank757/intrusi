@@ -132,7 +132,7 @@
   .chart-controls select:focus { border-color: var(--river); }
   .chart-wrap { position: relative; width: 100%; border: 1px solid var(--line); border-radius: 8px; background: #fafafa; overflow: hidden; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); }
   .chart-wrap canvas { display: block; width: 100%; touch-action: pan-y; cursor: crosshair; }
-  .chart-readout { font-family: var(--mono); font-size: 12.5px; font-weight: 500; color: var(--river-deep); background: #e0f2fe; padding: 8px 12px; border-radius: 6px; min-height: 35px; margin: 16px 0 0; display: flex; align-items: center; border: 1px solid #bae6fd; }
+  .chart-readout { font-family: var(--mono); font-size: 12.5px; font-weight: 500; color: var(--river-deep); background: #e0f2fe; padding: 12px; border-radius: 6px; min-height: 40px; margin: 16px 0 0; display: flex; align-items: center; border: 1px solid #bae6fd; }
   .chart-legend { display: flex; flex-wrap: wrap; gap: 8px 16px; margin-top: 16px; font-size: 12.5px; font-weight: 500; color: var(--ink-soft); }
   .chart-legend .sw { display: inline-block; width: 14px; height: 14px; border-radius: 3px; margin-right: 6px; vertical-align: -2px; border: 1px solid rgba(0,0,0,0.15); }
   .chart-legend .ln { display: inline-block; width: 22px; height: 0; margin-right: 6px; vertical-align: 4px; border-top: 2.5px solid; }
@@ -169,7 +169,7 @@
 
         <div class="field primary" id="field-t">
           <div class="field-top"><span class="field-label">Durasi Kering Ekivalen <span style="font-family:var(--mono)">(t)</span></span><span class="field-value"><span id="val-t">60</span> hr</span></div>
-          <div class="field-row"><input type="range" id="in-t" min="0" max="200" step="1" value="60"><input type="number" id="num-t" value="60"></div>
+          <div class="field-row"><input type="range" id="in-t" min="0" max="250" step="1" value="60"><input type="number" id="num-t" value="60"></div>
           <p class="field-note" id="t-detail">Debit dibatasi (floor) pada Qmin untuk t &gt; 90 hari — model resesi tidak diekstrapolasi tanpa batas ke bawah baseflow minimum.</p>
         </div>
 
@@ -259,6 +259,8 @@
               <option value="90">0 - 90 Hari</option>
               <option value="120" selected>0 - 120 Hari</option>
               <option value="150">0 - 150 Hari</option>
+              <option value="180">0 - 180 Hari</option>
+              <option value="200">0 - 200 Hari</option>
             </select>
           </div>
           <div class="chart-wrap"><canvas id="hov-canvas" height="300"></canvas></div>
@@ -329,7 +331,7 @@
   function tSetaraDariRasio(r){
     var kRes = 90 / Math.log(state.Qavg / state.Qmin);
     var rr = Math.min(Math.max(r, 0.001), 1);
-    return Math.min(200, Math.round(kRes * Math.log(1 / rr)));
+    return Math.min(250, Math.round(kRes * Math.log(1 / rr)));
   }
 
   // Menghitung debit KONDISI SAAT INI + hari tambahan
@@ -348,8 +350,7 @@
     return state.S0 * Math.exp(-(uf / currentD) * km * 1000);
   }
 
-  // ---- FUNGSI BARU UNTUK GRAFIK (SKALA ABSOLUT 0 - HTH) ----
-  // Selalu dihitung dari HTH ke-0 (debit maksimal = Qavg)
+  // ---- FUNGSI UNTUK GRAFIK (SKALA ABSOLUT 0 - HTH) ----
   function debitAbsolut(hth_absolut){
     var k = 90 / Math.log(state.Qavg / state.Qmin);
     return Math.max(state.Qmin, state.Qavg * Math.exp(-hth_absolut / k));
@@ -369,7 +370,24 @@
   }
   // ---------------------------------------------------------
 
+  function autoAdjustHorizon() {
+    var selectEl = document.getElementById("hov-horizon");
+    var currentH = parseInt(selectEl.value, 10);
+    // Jika HTH saat ini melebihi batas skala yang dipilih, perbesar skalanya otomatis
+    if (state.t > currentH) {
+      var options = Array.from(selectEl.options).map(opt => parseInt(opt.value, 10));
+      var nextH = options.find(val => val >= state.t);
+      if (nextH) {
+        selectEl.value = nextH;
+      } else {
+        selectEl.value = options[options.length - 1]; // Pilih nilai terbesar jika HTH kelewat tinggi
+      }
+    }
+  }
+
   function render(){
+    autoAdjustHorizon(); // Pastikan skala ter-update sebelum grafik digambar
+
     var skenarioHari = window.skenarioKeringHari || 15;
     var qDasar = debitPada(0);
     var qSk = debitPada(skenarioHari);
@@ -449,7 +467,7 @@
     if (!cv || !cv.getContext) return;
     var cssW = cv.parentNode.clientWidth;
     if (!cssW) return;
-    // H sekarang melambangkan skala total maksimum kemarau, default 120.
+    
     var H = parseInt(document.getElementById("hov-horizon").value, 10) || 120;
     var cssH = Math.max(300, Math.min(450, Math.round(cssW * 0.6)));
     var dpr = window.devicePixelRatio || 1;
@@ -506,12 +524,11 @@
     });
     ctx.setLineDash([]);
     
-    // 4. GARIS PENANDA "KONDISI SAAT INI" BERDASARKAN state.t
+    // 4. GARIS PENANDA "KONDISI SAAT INI"
     var currT = state.t;
     if(currT >= 0 && currT <= H) {
       var yCurr = yHari(currT);
       
-      // Garis bayangan hitam
       ctx.beginPath();
       ctx.moveTo(pad.l, yCurr);
       ctx.lineTo(pad.l + pw, yCurr);
@@ -520,7 +537,6 @@
       ctx.lineWidth = 2.5;
       ctx.stroke();
       
-      // Garis utama putih
       ctx.beginPath();
       ctx.moveTo(pad.l, yCurr);
       ctx.lineTo(pad.l + pw, yCurr);
@@ -529,18 +545,16 @@
       ctx.stroke();
       ctx.setLineDash([]);
       
-      // Label "KONDISI SAAT INI"
       ctx.fillStyle = "#ffffff";
       ctx.font = "bold 11px Inter, sans-serif";
       ctx.textAlign = "left";
       ctx.textBaseline = "bottom";
-      // Shadow text
       ctx.shadowColor = "rgba(0,0,0,0.8)";
       ctx.shadowBlur = 3;
       ctx.shadowOffsetX = 0;
       ctx.shadowOffsetY = 1;
       ctx.fillText("◀ POSISI AKTUAL SAAT INI (HTH " + Math.round(currT) + ")", pad.l + 8, yCurr - 4);
-      // reset shadow
+      
       ctx.shadowBlur = 0;
       ctx.shadowOffsetX = 0;
       ctx.shadowOffsetY = 0;
@@ -607,11 +621,17 @@
       if (x < L.pad.l || x > L.pad.l + L.pw || y < L.pad.t || y > L.pad.t + L.ph) return;
       var km = (x - L.pad.l) / L.pw * HOV_KM_MAX;
       var hari = Math.min(L.H, Math.max(0, Math.floor((L.pad.t + L.ph - y) / L.ch)));
-      
-      // Gunakan salinitas absolut untuk pembacaan tooltip
       var s = salinitasAbsolut(hari, km); 
+      var stat = statusOf(s);
       
-      out.innerHTML = `📍 <b>Jarak ${km.toFixed(1)} km</b> &nbsp;|&nbsp; ⏳ <b>HTH ke-${hari}</b> &nbsp;\vert{}&nbsp; 💧 <b>${s.toFixed(2)} ppt</b> <span style="font-family:var(--sans); font-size:11.5px; font-weight:700; padding:3px 8px; border-radius:12px; margin-left:8px; background:${warnaSalinitas(s)}; border: 1px solid rgba(0,0,0,0.1); color: ${s>15 ? '#fff' : 'var(--ink)'}">${statusOf(s).label}</span>`;
+      // Layout flexbox agar tidak saling menimpa (membentuk error ert{}) dan rapi di HP
+      out.innerHTML = `
+        <div style="display:flex; flex-wrap:wrap; gap:12px; align-items:center; width:100%;">
+          <span style="white-space:nowrap;">📍 <b>Jarak:</b> ${km.toFixed(1)} km</span>
+          <span style="white-space:nowrap;">⏳ <b>HTH:</b> ke-${hari}</span>
+          <span style="white-space:nowrap;">💧 <b>Salinitas:</b> ${s.toFixed(2)} ppt</span>
+          <span style="font-family:var(--sans); font-size:11.5px; font-weight:700; padding:4px 10px; border-radius:12px; background:${warnaSalinitas(s)}; border: 1px solid rgba(0,0,0,0.1); color: ${s>15 ? '#fff' : 'var(--ink)'}">${stat.label}</span>
+        </div>`;
     }
     cv.addEventListener("mousemove", baca);
     cv.addEventListener("touchstart", baca, { passive: true });
@@ -844,7 +864,7 @@
       if (rasio !== null) {
         var kRes = 90 / Math.log(state.Qavg / state.Qmin);
         r = Math.min(Math.max(rasio, 0.001), 1);
-        tEf = Math.min(200, Math.round(kRes * Math.log(1 / r)));
+        tEf = Math.min(250, Math.round(kRes * Math.log(1 / r)));
         qEst = Math.max(state.Qmin, state.Qavg * r);
       }
 
