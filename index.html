@@ -231,7 +231,7 @@
               <tbody id="rekap-body"></tbody>
             </table>
           </div>
-          <p class="table-caption" id="table-caption">Jarak berupa alur sungai riil.</p>
+          <p class="table-caption" id="table-caption">Jarak alur sungai adalah perkiraan.</p>
         </div>
       </div>
 
@@ -243,16 +243,28 @@
 <script>
 (function(){
   "use strict";
-  var state = { S0: 30, Qavg: 138, Qmin: 15.8, t: 60, w: 80, d: 12 };
+  var state = { S0: 30, Qavg: 138, Qmin: 15.8, t: 60, w: 80, d: 12, rasio: null };
   var ids = ["S0","Qavg","Qmin","t","w","d"];
   var AMBANG_T_DASAR = 60;
-  
+
   function bindField(key){
     var r = document.getElementById("in-" + key), n = document.getElementById("num-" + key);
-    r.addEventListener("input", function(){ state[key] = parseFloat(r.value); n.value = r.value; onChange(); });
+    function sesudahUbah(){
+      if (key === "t") {
+        state.rasio = null;
+        document.getElementById("t-detail").innerHTML =
+          "Mode manual: nilai t diatur sendiri. Sinkronisasi berikutnya akan menimpanya dengan nilai dari indeks hujan.";
+      } else if (state.rasio !== null && (key === "Qavg" || key === "Qmin")) {
+        state.t = tSetaraDariRasio(state.rasio);
+        document.getElementById("in-t").value = state.t;
+        document.getElementById("num-t").value = state.t;
+      }
+      onChange();
+    }
+    r.addEventListener("input", function(){ state[key] = parseFloat(r.value); n.value = r.value; sesudahUbah(); });
     n.addEventListener("input", function(){
       if(n.value === "") return;
-      var v = parseFloat(n.value); if(!isNaN(v)){ state[key] = v; r.value = v; onChange(); }
+      var v = parseFloat(n.value); if(!isNaN(v)){ state[key] = v; r.value = v; sesudahUbah(); }
     });
   }
   ids.forEach(bindField);
@@ -263,18 +275,37 @@
     return {cls:"gagal", label:"Risiko Gagal"};
   }
 
-  // Salinitas di jarak km (dari muara) untuk durasi tanpa hujan t.
-  function salinitasPada(t, km){
+  // t setara dari rasio API (hanya untuk tampilan slider dan aturan ambang t).
+  function tSetaraDariRasio(r){
+    var kRes = 90 / Math.log(state.Qavg / state.Qmin);
+    var rr = Math.min(Math.max(r, 0.001), 1);
+    return Math.min(200, Math.round(kRes * Math.log(1 / rr)));
+  }
+
+  // Debit (m3/s) setelah `hariTambahan` hari tanpa hujan dari kondisi sekarang.
+  // - Ada rasio API: Q = Qavg * rasio * k_api^hari  (konsisten dengan definisi API).
+  // - Mode manual (slider t): resesi eksponensial.
+  function debitPada(hariTambahan){
+    if (state.rasio !== null) {
+      var kApi = (typeof window.kApi === "number") ? window.kApi : 0.95;
+      return Math.max(state.Qmin, state.Qavg * state.rasio * Math.pow(kApi, hariTambahan));
+    }
     var k = 90 / Math.log(state.Qavg / state.Qmin);
-    var Qt = Math.max(state.Qmin, state.Qavg * Math.exp(-t / k));
-    var uf = Qt / (state.w * state.d);
+    return Math.max(state.Qmin, state.Qavg * Math.exp(-(state.t + hariTambahan) / k));
+  }
+
+  // Salinitas di jarak km setelah `hariTambahan` hari kering tambahan (0 = kondisi sekarang).
+  function salinitasPada(hariTambahan, km){
+    var uf = debitPada(hariTambahan) / (state.w * state.d);
     var currentD = window.customActiveD || 100;
     return state.S0 * Math.exp(-(uf / currentD) * km * 1000);
   }
 
   function render(){
     var skenarioHari = window.skenarioKeringHari || 15;
-    var tSkenario = state.t + skenarioHari;
+    var qDasar = debitPada(0);
+    var qSk = debitPada(skenarioHari);
+    var diBatasQmin = (qDasar <= state.Qmin * 1.001);
 
     var titikPompa = [
       { id: "cenrana", km: 10, nama: "Cenrana", lat: -4.32276555380242, lon: 120.3133628191657 },
@@ -286,15 +317,17 @@
     ];
 
     var hasil = titikPompa.map(p => {
-      var sal = salinitasPada(state.t, p.km);
-      var salSk = salinitasPada(tSkenario, p.km);
+      var sal = salinitasPada(0, p.km);
+      var salSk = salinitasPada(skenarioHari, p.km);
       return Object.assign({}, p, { sal: sal, status: statusOf(sal), salSk: salSk, statusSk: statusOf(salSk) });
     });
 
     document.getElementById("th-skenario").textContent = "Skenario +" + skenarioHari + " hr kering";
     document.getElementById("table-caption").textContent =
-      "Jarak berupa alur sungai riil. Kolom skenario adalah simulasi salinitas jika " + skenarioHari +
-      " hari ke depan tetap tanpa hujan (t + " + skenarioHari + " = " + tSkenario + " hari), bukan prakiraan.";
+      "Jarak alur sungai adalah perkiraan (belum diukur pada garis sungai). Kolom skenario adalah simulasi salinitas jika " +
+      skenarioHari + " hari ke depan tetap tanpa hujan (debit " + qDasar.toFixed(1) + " menjadi " + qSk.toFixed(1) +
+      " m³/s), bukan prakiraan." +
+      (diBatasQmin ? " Debit sudah di batas Qmin, jadi skenario tidak menurunkan debit lagi." : "");
 
     document.getElementById("rekap-body").innerHTML = hasil.map(p => {
       return `<tr>
@@ -373,7 +406,7 @@
   }
 
   // PAUTKAN KE URL DEPLOYMENT GOOGLE APPS SCRIPT ANDA
-  const URL_GAS = "https://script.google.com/macros/s/AKfycbw4j7YKsuGn28b2eGwA70CYE5SVGF4zMD0sj4EY6IsVMH96pYcVsB2L8Jh-OL_Jd7Tx/exec";
+  const URL_GAS = "https://script.google.com/macros/s/AKfycbzzdGoZLj2CO1hQKlPj3ER0PkP_fFBn1psyguKpEQ7x5AdGtMc1nNtyS78MI8jXBRq7/exec";
 
   // Data hujan dianggap "tidak diperbarui hari ini" jika lebih tua dari ini (jam).
   var BATAS_UMUR_HTH_JAM = 30;
@@ -417,6 +450,7 @@
       var skorKering = data.skor_risiko_kering || 0;
       var skorBasah = data.skor_risiko_basah || 0;
       window.skenarioKeringHari = (typeof data.skenario_kering_hari === "number") ? data.skenario_kering_hari : 15;
+      window.kApi = (typeof data.k_api === "number") ? data.k_api : 0.95;
 
       // === PANEL IKLIM GLOBAL (ENSO + IOD) ===
       var panelIklim = document.getElementById("iklim-panel");
@@ -535,17 +569,17 @@
         }
       }
 
-      // === HARI TANPA HUJAN (t) — nilai terukur, dipakai model resesi debit ===
-            var t = bacaHariTanpaHujan(data);
+      // === HARI TANPA HUJAN (t) — dipakai model resesi debit ===
+      var t = bacaHariTanpaHujan(data);
       var detailT = document.getElementById("t-detail");
       var ambangEfektif = (typeof data.ambang_hujan_efektif_mm === "number") ? data.ambang_hujan_efektif_mm : null;
 
       // t setara dari indeks hujan antecedent: Q = Qavg * rasio  ->  t = k * ln(1/rasio)
       var rasio = (typeof data.indeks_basah_rasio === "number") ? data.indeks_basah_rasio : null;
-      var tEf = null, qEst = null;
+      var tEf = null, qEst = null, r = null;
       if (rasio !== null) {
         var kRes = 90 / Math.log(state.Qavg / state.Qmin);
-        var r = Math.min(Math.max(rasio, 0.001), 1);
+        r = Math.min(Math.max(rasio, 0.001), 1);
         tEf = Math.min(200, Math.round(kRes * Math.log(1 / r)));
         qEst = Math.max(state.Qmin, state.Qavg * r);
       }
@@ -556,6 +590,7 @@
 
       if (tEf !== null) {
         state.t = tEf;
+        state.rasio = r;
         document.getElementById("in-t").value = state.t;
         document.getElementById("num-t").value = state.t;
         var umurIdx = (typeof data.indeks_basah_umur_jam === "number") ? data.indeks_basah_umur_jam : null;
@@ -569,6 +604,7 @@
           hthInfo + umurTextT;
       } else if (!t.gagal) {
         // Cadangan: indeks tidak tersedia, pakai HTH terukur
+        state.rasio = null;
         state.t = t.terukur;
         document.getElementById("in-t").value = state.t;
         document.getElementById("num-t").value = state.t;
@@ -594,10 +630,10 @@
       var activeD = Number(data.koefisien_dispersi_estimasi) || 100;
       
       var footNote = `<span class="status-time">Pembaruan: ${updateTimeStr}</span><span class="status-caveat">D adalah estimasi dari pasang &amp; angin laut — bukan hasil kalibrasi lapangan.</span>`;
-      if (maxTideLatTxt) {
-              if (data.fase_pasang) {
+      if (data.fase_pasang) {
         footNote += `<span class="status-caveat">Fase pasang (perkiraan bulan): ${escapeHtml(data.fase_pasang)}.</span>`;
       }
+      if (maxTideLatTxt) {
         var offsetTampil = (maxTideLatRaw !== null && maxTideLatRaw !== undefined) ?
           (Number(maxTideLatRaw) - maxTideNum).toFixed(2) : "1.57";
         footNote += `<span class="status-caveat">*Angka setara LAT adalah perkiraan kasar (offset ~${offsetTampil} m dari 8 titik data), bukan konversi resmi BMKG — pakai sebagai pembanding kasar saja.</span>`;
@@ -614,25 +650,37 @@
         });
       }
 
-      if(!maxTideGagal && maxTideNum >= 1.5 && state.t >= ambangT) {
+      // D harus diset SEBELUM salinitas dihitung untuk banner.
+      window.customActiveD = activeD;
+
+      var KM_POMPA = [10, 15, 20, 25, 30, 35];
+      var salPompa = KM_POMPA.map(function(km){ return salinitasPada(0, km); });
+      var nGagal = salPompa.filter(function(s){ return s > 5; }).length;
+      var nTurun = salPompa.filter(function(s){ return s > 1.3; }).length;
+      var ambangPasang = (typeof data.ambang_pasang_darurat_m === "number") ? data.ambang_pasang_darurat_m : 0.7;
+      var aturanDarurat = (!maxTideGagal && maxTideNum >= ambangPasang && state.t >= ambangT);
+      var ringkas = "Model: <b>" + nGagal + " dari " + KM_POMPA.length + "</b> titik pompa &gt; 5 ppt, " +
+        nTurun + " titik &gt; 1,3 ppt (t setara " + state.t + " hari, ambang kritis " + ambangT + " hari).";
+
+      if (nGagal > 0 || aturanDarurat) {
         panelSal.classList.add("status-darurat");
-        document.getElementById("status-title").textContent = "DARURAT SALINITAS (PASANG EKSTREM)";
-        document.getElementById("status-text").innerHTML = `Pasang tercatat <b>${tideTxt}</b> dengan durasi kemarau kritis (t = ${state.t} hari, ambang ${ambangT} hari). <b>Hentikan pompa irigasi!</b> (D=${activeD}) ${footNote}`;
-      } else if (data.angin_laut_aktif) {
-        panelSal.classList.add("status-waspada");
-        document.getElementById("status-title").textContent = "WASPADA (ANGIN LAUT KUAT)";
-        document.getElementById("status-text").innerHTML = `Pasang <b>${tideTxt}</b> + angin laut dari Teluk Bone. Intrusi terdorong ke hulu, batasi jam sedot. (D=${activeD}) ${footNote}`;
+        document.getElementById("status-title").textContent = "DARURAT SALINITAS";
+        document.getElementById("status-text").innerHTML = `${ringkas} Pasang <b>${tideTxt}</b>. <b>Hentikan atau batasi pompa di titik yang melewati 5 ppt!</b> (D=${activeD}) ${footNote}`;
       } else if (maxTideGagal) {
         panelSal.classList.add("status-netral");
         document.getElementById("status-title").textContent = "DATA PASANG TIDAK TERSEDIA";
-        document.getElementById("status-text").innerHTML = `Data pasang laut belum berhasil diambil, jadi status salinitas <b>tidak bisa disimpulkan</b>. Periksa tabel pasang secara manual sebelum menjadwalkan irigasi. (D=${activeD}) ${footNote}`;
+        document.getElementById("status-text").innerHTML = `${ringkas} Data pasang laut belum berhasil diambil, jadi D memakai nilai dasar dan hasil bisa terlalu rendah. Periksa tabel pasang secara manual. (D=${activeD}) ${footNote}`;
+      } else if (nTurun > 0 || data.angin_laut_aktif) {
+        panelSal.classList.add("status-waspada");
+        document.getElementById("status-title").textContent = "WASPADA SALINITAS";
+        var ketAngin = data.angin_laut_aktif ? " Angin laut dari Teluk Bone aktif, intrusi terdorong ke hulu." : "";
+        document.getElementById("status-text").innerHTML = `${ringkas} Pasang <b>${tideTxt}</b>.${ketAngin} Batasi jam sedot di titik yang melewati 1,3 ppt. (D=${activeD}) ${footNote}`;
       } else {
         panelSal.classList.add("status-aman");
         document.getElementById("status-title").textContent = "SALINITAS AMAN";
-        document.getElementById("status-text").innerHTML = `Pasang laut normal <b>${tideTxt}</b>. Kondisi aman untuk penjadwalan irigasi. (D=${activeD}) ${footNote}`;
+        document.getElementById("status-text").innerHTML = `${ringkas} Pasang <b>${tideTxt}</b>. Kondisi aman untuk penjadwalan irigasi. (D=${activeD}) ${footNote}`;
       }
 
-      window.customActiveD = activeD; 
       onChange();
       btn.textContent = "Sinkronisasi Berhasil";
       
