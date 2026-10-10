@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+Put your HTML text here<!DOCTYPE html>
 <html lang="id">
 <head>
 <meta charset="UTF-8">
@@ -406,7 +406,7 @@
   }
 
   // PAUTKAN KE URL DEPLOYMENT GOOGLE APPS SCRIPT ANDA
-  const URL_GAS = "https://script.google.com/macros/s/AKfycbzzdGoZLj2CO1hQKlPj3ER0PkP_fFBn1psyguKpEQ7x5AdGtMc1nNtyS78MI8jXBRq7/exec";
+  const URL_GAS = "https://script.google.com/macros/s/AKfycbz7xr7Z7mv-RDRUcxNN4sSEd1GfppyulUfOEVLF-wTKXWJmWi7fhMIRj8QjmXGNPPXuAg/exec";
 
   // Data hujan dianggap "tidak diperbarui hari ini" jika lebih tua dari ini (jam).
   var BATAS_UMUR_HTH_JAM = 30;
@@ -623,21 +623,19 @@
       
       var maxTideGagal = (data.max_tide_meter === null || data.max_tide_meter === undefined);
       var maxTideNum = maxTideGagal ? 0 : Number(data.max_tide_meter);
-      var maxTideLatRaw = data.max_tide_setara_lat_meter;
-      var maxTideLatTxt = (maxTideLatRaw === null || maxTideLatRaw === undefined) ? "" :
-        ` <span style="opacity:0.75">(≈ ${Number(maxTideLatRaw).toFixed(2)} m kalau dibandingkan dengan angka di situs BMKG, datum LAT)</span>`;
-      var tideTxt = maxTideGagal ? "tidak tersedia" : maxTideNum.toFixed(2) + " meter" + maxTideLatTxt;
+            var datumPasang = data.datum_pasang || null;   // "LAT" | "LAT~" | "LAT~SG"
+      var datumLangsung = (datumPasang === "LAT");
+      var tideTxt = maxTideGagal ? "tidak tersedia" :
+        maxTideNum.toFixed(2) + " m (datum LAT" + (datumLangsung ? "" : ", perkiraan") + ")";
       var activeD = Number(data.koefisien_dispersi_estimasi) || 100;
       
       var footNote = `<span class="status-time">Pembaruan: ${updateTimeStr}</span><span class="status-caveat">D adalah estimasi dari pasang &amp; angin laut — bukan hasil kalibrasi lapangan.</span>`;
       if (data.fase_pasang) {
         footNote += `<span class="status-caveat">Fase pasang (perkiraan bulan): ${escapeHtml(data.fase_pasang)}.</span>`;
       }
-      if (maxTideLatTxt) {
-        var offsetTampil = (maxTideLatRaw !== null && maxTideLatRaw !== undefined) ?
-          (Number(maxTideLatRaw) - maxTideNum).toFixed(2) : "1.57";
-        footNote += `<span class="status-caveat">*Angka setara LAT adalah perkiraan kasar (offset ~${offsetTampil} m dari 8 titik data), bukan konversi resmi BMKG — pakai sebagai pembanding kasar saja.</span>`;
-      }
+      if (!maxTideGagal && datumPasang && !datumLangsung) {
+  footNote += `<span class="status-caveat">*Pasang ini konversi perkiraan dari model MSL ke LAT (sumber cadangan), bukan data LAT langsung dari BMKG — bisa meleset sekitar 0.05 m atau lebih.</span>`;
+}
       if (ambangT < AMBANG_T_DASAR) {
         footNote += `<span class="status-caveat">*Ambang t kritis diturunkan menjadi ${ambangT} hari karena risiko iklim (El Niño/IOD positif) pada bulan rawan kering.</span>`;
       }
@@ -657,7 +655,7 @@
       var salPompa = KM_POMPA.map(function(km){ return salinitasPada(0, km); });
       var nGagal = salPompa.filter(function(s){ return s > 5; }).length;
       var nTurun = salPompa.filter(function(s){ return s > 1.3; }).length;
-      var ambangPasang = (typeof data.ambang_pasang_darurat_m === "number") ? data.ambang_pasang_darurat_m : 0.7;
+      var ambangPasang = (typeof data.ambang_pasang_darurat_m === "number") ? data.ambang_pasang_darurat_m : 2.27;
       var aturanDarurat = (!maxTideGagal && maxTideNum >= ambangPasang && state.t >= ambangT);
       var ringkas = "Model: <b>" + nGagal + " dari " + KM_POMPA.length + "</b> titik pompa &gt; 5 ppt, " +
         nTurun + " titik &gt; 1,3 ppt (t setara " + state.t + " hari, ambang kritis " + ambangT + " hari).";
