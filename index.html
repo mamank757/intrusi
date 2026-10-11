@@ -133,7 +133,7 @@
   .chart-wrap { position: relative; width: 100%; border: 1px solid var(--line); border-radius: 8px; background: #fafafa; overflow: hidden; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); }
   .chart-wrap canvas { display: block; width: 100%; touch-action: none; cursor: crosshair; } /* touch-action: none agar scroll tidak ganggu saat inspeksi grafik */
   
-  /* KURSOR INSPEKSI (BARU) */
+  /* KURSOR INSPEKSI */
   .chart-cursor { 
     display: none; 
     position: absolute; 
@@ -152,6 +152,52 @@
   .chart-legend { display: flex; flex-wrap: wrap; gap: 8px 16px; margin-top: 16px; font-size: 12.5px; font-weight: 500; color: var(--ink-soft); }
   .chart-legend .sw { display: inline-block; width: 14px; height: 14px; border-radius: 3px; margin-right: 6px; vertical-align: -2px; border: 1px solid rgba(0,0,0,0.15); }
   .chart-legend .ln { display: inline-block; width: 22px; height: 0; margin-right: 6px; vertical-align: 4px; border-top: 2.5px solid; }
+
+  /* === PASANG SURUT (scoped) === */
+  #pasut-viz .pv-bar{display:flex;flex-wrap:wrap;gap:8px 10px;align-items:center;margin-bottom:18px}
+  #pasut-viz .pv-spacer{flex:1 1 auto}
+  #pasut-viz .pv-chip{font:600 12px var(--mono);padding:5px 12px;border-radius:999px;background:#e2e8f0;color:#334155}
+  #pasut-viz .pv-chip.live{background:var(--paddy-bg);color:#166534}
+  #pasut-viz .pv-chip.demo{background:var(--amber-bg);color:#92400e}
+  #pasut-viz .pv-bar select,#pasut-viz .pv-bar button{font:500 13px var(--sans);border:1px solid var(--line);border-radius:8px;padding:7px 12px;background:#fff;color:var(--ink);cursor:pointer}
+  #pasut-viz .pv-bar button:hover{background:#f1f5f9}
+  #pasut-viz .pv-bar button.pv-primary{background:var(--river);color:#fff;border-color:var(--river)}
+  #pasut-viz .pv-bar button.pv-primary:hover{background:#0369a1}
+  #pasut-viz .pv-grid{display:grid;grid-template-columns:240px 1fr;gap:20px;align-items:start}
+  @media (max-width:820px){#pasut-viz .pv-grid{grid-template-columns:1fr}#pasut-viz .pv-gcard{max-width:300px;margin:0 auto;width:100%}}
+  #pasut-viz .pv-gcard{border:1px solid var(--line);border-radius:10px;background:#f8fafc;padding:14px 12px 12px}
+  #pasut-viz .pv-level{display:flex;align-items:baseline;justify-content:center;gap:6px;margin:0}
+  #pasut-viz .pv-level span{font:700 40px var(--mono);color:var(--river-deep);letter-spacing:-.03em}
+  #pasut-viz .pv-level small{font:600 12px var(--mono);color:var(--ink-soft)}
+  #pasut-viz .pv-trend{text-align:center;font:600 13px var(--sans);margin:2px 0 2px}
+  #pasut-viz .pv-trend.up{color:#0369a1}
+  #pasut-viz .pv-trend.down{color:#15803d}
+  #pasut-viz .pv-trend.flat{color:var(--ink-soft)}
+  #pasut-viz .pv-clock{text-align:center;font:500 11.5px var(--mono);color:var(--ink-soft);margin:0 0 6px}
+  #pasut-viz #pv-gauge-box svg{display:block;width:100%;height:auto}
+  #pasut-viz .pv-gleg{font-size:11.5px;color:var(--ink-soft);margin:6px 4px 0;line-height:1.5}
+  #pasut-viz .pv-chartwrap{border:1px solid var(--line);border-radius:10px;background:#fafafa;overflow:hidden}
+  #pasut-viz #pv-chart svg{display:block;width:100%;height:auto}
+  #pasut-viz .pv-legend{display:flex;flex-wrap:wrap;gap:6px 16px;margin:12px 2px 0;font-size:12px;font-weight:500;color:var(--ink-soft)}
+  #pasut-viz .pv-dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:-1px}
+  #pasut-viz .pv-dash{display:inline-block;width:18px;border-top:2px dashed var(--clay);margin-right:6px;vertical-align:3px}
+  #pasut-viz .pv-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin-top:20px}
+  #pasut-viz .pv-card{border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:#fff}
+  #pasut-viz .pv-card>span{display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-soft)}
+  #pasut-viz .pv-card>strong{display:block;font:700 20px var(--mono);color:var(--river-deep);margin:2px 0}
+  #pasut-viz .pv-card>small{display:block;font-size:12px;color:var(--ink-soft);line-height:1.4}
+  #pasut-viz .pv-card.warn{background:var(--clay-bg);border-color:#fca5a5}
+  #pasut-viz .pv-card.warn>strong{color:#991b1b}
+  #pasut-viz .pv-h3{font:600 13px var(--sans);margin:20px 0 6px;color:var(--river-deep)}
+  #pasut-viz .pv-list{margin:0;padding:0 0 0 18px;font:500 12.5px var(--mono);color:#334155;line-height:1.7}
+  #pasut-viz .pv-note{font-size:12px;color:var(--ink-soft);margin:14px 0 0;line-height:1.55;font-style:italic}
+  #pasut-viz .pv-warn{font-size:12.5px;color:#92400e;background:var(--amber-bg);border-radius:8px;padding:8px 12px;margin:0 0 14px;display:none}
+  #pasut-viz .pv-w1{animation:pvw1 4s linear infinite}
+  #pasut-viz .pv-w2{animation:pvw2 7s linear infinite}
+  @keyframes pvw1{from{transform:translateX(0)}to{transform:translateX(-150px)}}
+  @keyframes pvw2{from{transform:translateX(-200px)}to{transform:translateX(0)}}
+  @media (prefers-reduced-motion:reduce){#pasut-viz .pv-w1,#pasut-viz .pv-w2{animation:none}}
+  /* === akhir PASANG SURUT === */
 
   @media (max-width: 480px) {
     header.hero { padding: 32px 16px 0; }
@@ -251,6 +297,70 @@
         </div>
       </div>
 
+      <!-- VISUALISASI PASANG SURUT (BMKG, stasiun Bajoe) -->
+      <section class="panel" id="pasut-viz">
+        <div class="panel-head"><h2>Visualisasi Pasang Surut — Muara Walanae (Stasiun Bajoe)</h2></div>
+        <div class="panel-body">
+
+          <div class="pv-bar">
+            <span id="pv-chip" class="pv-chip">Memuat data BMKG…</span>
+            <span class="pv-spacer"></span>
+            <button id="pv-play" class="pv-primary" type="button">▶ Putar animasi</button>
+            <select id="pv-speed" aria-label="Kecepatan animasi">
+              <option value="1">1 jam/dtk</option>
+              <option value="3" selected>3 jam/dtk</option>
+              <option value="6">6 jam/dtk</option>
+            </select>
+            <button id="pv-now" type="button">Sekarang</button>
+            <select id="pv-view" aria-label="Rentang tampilan">
+              <option value="all">Semua data</option>
+              <option value="48">48 jam</option>
+              <option value="24">24 jam</option>
+            </select>
+            <select id="pv-tz" aria-label="Zona waktu">
+              <option value="8">WITA (UTC+8)</option>
+              <option value="0">UTC</option>
+            </select>
+            <button id="pv-reload" type="button" title="Muat ulang data" aria-label="Muat ulang data">⟳</button>
+          </div>
+
+          <p class="pv-warn" id="pv-warn"></p>
+
+          <div class="pv-grid">
+            <div class="pv-gcard">
+              <p class="pv-level"><span id="pv-level">–</span><small>m (LAT)</small></p>
+              <div class="pv-trend flat" id="pv-trend">–</div>
+              <p class="pv-clock" id="pv-clock">–</p>
+              <div id="pv-gauge-box"></div>
+              <p class="pv-gleg"><span class="pv-dash"></span>ambang darurat pasang <b id="pv-gthr">2.27</b> m &nbsp;·&nbsp; garis putih titik: tengah pasut (MSL)</p>
+            </div>
+
+            <div>
+              <div class="pv-chartwrap"><div id="pv-chart" role="img" aria-label="Grafik pasang surut"></div></div>
+              <div class="pv-legend">
+                <span><span class="pv-dot" style="background:#ef4444"></span>Pasang tertinggi (H)</span>
+                <span><span class="pv-dot" style="background:#16a34a"></span>Surut terendah (L)</span>
+                <span><span class="pv-dash"></span>Ambang darurat pasang</span>
+                <span><span class="pv-dot" style="background:rgba(239,68,68,.35)"></span>Muka air di atas ambang</span>
+              </div>
+              <p class="field-note pv-note" style="margin-top:10px">Geser/klik pada grafik untuk memilih waktu; tekan “Sekarang” untuk kembali ke waktu nyata.</p>
+            </div>
+          </div>
+
+          <div class="pv-cards">
+            <div class="pv-card"><span>Pasang berikut</span><strong id="pv-nh">–</strong><small id="pv-nh2"></small></div>
+            <div class="pv-card"><span>Surut berikut</span><strong id="pv-nl">–</strong><small id="pv-nl2"></small></div>
+            <div class="pv-card"><span>Tunggang 24 jam ke depan</span><strong id="pv-rng">–</strong><small id="pv-rng2"></small></div>
+            <div class="pv-card" id="pv-thrcard"><span>Ambang darurat <b id="pv-thrv">2.27</b> m</span><strong id="pv-thr">–</strong><small id="pv-thr2"></small></div>
+          </div>
+
+          <h3 class="pv-h3">Jendela muka air di atas ambang darurat <span id="pv-tzlab"></span></h3>
+          <ul class="pv-list" id="pv-over"></ul>
+
+          <p class="pv-note" id="pv-src"></p>
+        </div>
+      </section>
+
       <!-- PETA SUNGAI (Leaflet) -->
       <div class="panel">
         <div class="panel-head"><h2>Peta Distribusi Salinitas Realtime</h2></div>
@@ -314,6 +424,12 @@
 </main>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+  // SATU-SATUNYA tempat mengisi URL deployment Google Apps Script (dipakai dashboard & visualisasi pasut).
+  window.URL_GAS_WALANAE = "https://script.google.com/macros/s/AKfycbw1-QCZ5Jx5XTW9T63x8t967OjnQXNI9p9bhyC1qwooUpcgLKEpNPqdT9hL1lME_l1CwA/exec";
+</script>
+
+<!-- ===================== DASHBOARD SALINITAS ===================== -->
 <script>
 (function(){
   "use strict";
@@ -745,7 +861,7 @@
     render();
   }
 
-  const URL_GAS = "https://script.google.com/macros/s/AKfycby66DrFZQx8eV7rLoQbqeVFoFWFLGFzlHeuvFtqxfutGTiFErHGz98bCUAf6AsRhlX3cQ/exec";
+  const URL_GAS = window.URL_GAS_WALANAE;
   var BATAS_UMUR_HTH_JAM = 30;
 
   function bacaHariTanpaHujan(data){
@@ -843,7 +959,7 @@
         baris.push(`<b>Alert Kekeringan:</b> Ambang toleransi operasional pompa direduksi dari ${AMBANG_T_DASAR} menjadi <b>${ambangT} hari kering</b>.`);
       }
       if (skorBasah > 0) {
-        baris.push(`<b>Alert Luapan Sungai:</b> Threshold kewaspadaan hulu diturunkan otomatis (Waspada: <b>${waspada} mm</b> \vert{} Siaga: <b>${siaga} mm</b>).`);
+        baris.push(`<b>Alert Luapan Sungai:</b> Threshold kewaspadaan hulu diturunkan otomatis (Waspada: <b>${waspada} mm</b> | Siaga: <b>${siaga} mm</b>).`);
       }
       
       document.getElementById("iklim-lines").innerHTML = baris.map(function(b){ return "<li>" + b + "</li>"; }).join("");
@@ -1004,6 +1120,569 @@
   onChange();
   syncData();
   
+})();
+</script>
+
+<!-- ===================== VISUALISASI PASANG SURUT ===================== -->
+<script>
+(function(){
+  "use strict";
+
+  /* ---------- KONFIGURASI ---------- */
+  var URL_GAS     = window.URL_GAS_WALANAE || "";
+  var ID_STASIUN  = "4000000001";   // Bajoe
+  var DATUM       = "LAT";
+  var DEF         = { thr: 2.27, mid: 1.57 };   // cadangan; dibaca dari Apps Script bila tersedia
+  var FETCH_TIMEOUT_MS = 12000;
+
+  // Data contoh (respons asli BMKG hltide, 10-13 Okt 2026, datum LAT, UTC)
+  var DEMO = {
+    low_tides:[
+      {time:"2026-10-10T10:40+00:00",value:0.964},{time:"2026-10-10T23:10+00:00",value:0.667},
+      {time:"2026-10-11T11:10+00:00",value:1.066},{time:"2026-10-11T23:50+00:00",value:0.544},
+      {time:"2026-10-12T11:50+00:00",value:1.172},{time:"2026-10-13T00:20+00:00",value:0.476},
+      {time:"2026-10-13T12:20+00:00",value:1.269}],
+    high_tides:[
+      {time:"2026-10-10T04:40+00:00",value:2.228},{time:"2026-10-10T16:50+00:00",value:2.374},
+      {time:"2026-10-11T05:30+00:00",value:2.242},{time:"2026-10-11T17:10+00:00",value:2.422},
+      {time:"2026-10-12T06:20+00:00",value:2.224},{time:"2026-10-12T17:40+00:00",value:2.434},
+      {time:"2026-10-13T07:00+00:00",value:2.182},{time:"2026-10-13T18:10+00:00",value:2.412}]
+  };
+
+  /* ---------- UTILITAS ---------- */
+  var HARI=["Min","Sen","Sel","Rab","Kam","Jum","Sab"];
+  var BLN=["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agu","Sep","Okt","Nov","Des"];
+  var HR=3600000, DAY=86400000;
+  function $(id){ return document.getElementById(id); }
+  function pad(n){ return (n<10?"0":"")+n; }
+
+  var S = {
+    P:[], t:Date.now(), mode:"live", playing:false, speed:3, off:8, view:"all",
+    thr:DEF.thr, mid:DEF.mid, demo:false, demoBase:0, loadedAt:0,
+    dStart:0, dEnd:0, over:[], yMax:3, L:null, sumber:"", loadSeq:0, seri:null, curve:"kosinus", midName:"tengah pasut"
+  };
+
+  function zoneName(){ return S.off===8 ? "WITA" : "UTC"; }
+  function fmtHM(t){ var d=new Date(t+S.off*HR); return pad(d.getUTCHours())+":"+pad(d.getUTCMinutes()); }
+  function fmtDay(t){ var d=new Date(t+S.off*HR); return HARI[d.getUTCDay()]+" "+d.getUTCDate()+" "+BLN[d.getUTCMonth()]; }
+  function fmtDur(ms){
+    var m=Math.max(0,Math.round(ms/60000)), h=Math.floor(m/60), mm=m%60;
+    return h>0 ? h+" j "+mm+" m" : mm+" m";
+  }
+  function dayRel(t,ref){
+    var n=Math.floor((t+S.off*HR)/DAY)-Math.floor((ref+S.off*HR)/DAY);
+    return n===0?"hari ini":(n===1?"besok":fmtDay(t));
+  }
+  function ymd(d){ return d.getUTCFullYear()+pad(d.getUTCMonth()+1)+pad(d.getUTCDate()); }
+
+  /* ---------- DATA: parsing & interpolasi ---------- */
+  function parseT(s){
+    var t=Date.parse(s);
+    if(isNaN(t) && typeof s==="string") t=Date.parse(s.replace(/\+00:00$/,"Z"));
+    return t;
+  }
+  function parseHL(j){
+    var out=[];
+    if(!j || typeof j!=="object") return out;
+    [["high_tides","H"],["low_tides","L"]].forEach(function(k){
+      (Array.isArray(j[k[0]])?j[k[0]]:[]).forEach(function(p){
+        var t=parseT(p && p.time), h=p && p.value;
+        if(!isNaN(t) && typeof h==="number") out.push({t:t,h:h,ty:k[1]});
+      });
+    });
+    out.sort(function(a,b){ return a.t-b.t; });
+    return out;
+  }
+  // Tinggi muka air pada waktu t.
+  // - Ada deret waktu BMKG 10 menit (S.seri): interpolasi linier antar sampel (data asli).
+  // - Tidak ada: interpolasi kosinus antara titik pasang/surut berurutan (aproksimasi).
+  function levelAt(t){
+    var s=S.seri;
+    if(s){
+      var T=s.T, V=s.V, m=T.length;
+      if(t<=T[0]) return V[0];
+      if(t>=T[m-1]) return V[m-1];
+      var a=0, b=m-1;
+      while(b-a>1){ var c=(a+b)>>1; if(T[c]<=t) a=c; else b=c; }
+      return V[a]+(V[b]-V[a])*(t-T[a])/(T[b]-T[a]);
+    }
+    var P=S.P, n=P.length;
+    if(!n) return 0;
+    if(t<=P[0].t) return P[0].h;
+    if(t>=P[n-1].t) return P[n-1].h;
+    var lo=0, hi=n-1;
+    while(hi-lo>1){ var mid=(lo+hi)>>1; if(P[mid].t<=t) lo=mid; else hi=mid; }
+    var p0=P[lo], p1=P[hi], f=(t-p0.t)/(p1.t-p0.t);
+    return p0.h+(p1.h-p0.h)*(1-Math.cos(Math.PI*f))/2;
+  }
+
+  // Deret waktu BMKG: [{"t":"2026-10-11T00:00+00:00","lt":"0.74","msl":"-0.81",...}, ...]
+  // (kolom "lt" = LAT; nilai berupa string) ATAU bentuk ringkas dari Apps Script {t:[...], lt:[...]}.
+  function parseSeri(j){
+    var T=[], V=[], i, t, v;
+    if(Array.isArray(j)){
+      for(i=0;i<j.length;i++){
+        t=parseT(j[i] && j[i].t); v=parseFloat(j[i] && j[i].lt);
+        if(!isNaN(t) && !isNaN(v)){ T.push(t); V.push(v); }
+      }
+    } else if(j && Array.isArray(j.t) && Array.isArray(j.lt)){
+      for(i=0;i<j.t.length;i++){
+        t=parseT(j.t[i]); v=parseFloat(j.lt[i]);
+        if(!isNaN(t) && !isNaN(v)){ T.push(t); V.push(v); }
+      }
+    }
+    var idx=T.map(function(_,k){ return k; }).sort(function(a,b){ return T[a]-T[b]; });
+    return { T: idx.map(function(k){ return T[k]; }), V: idx.map(function(k){ return V[k]; }) };
+  }
+
+  // Cadangan bila titik H/L tidak tersedia: cari puncak/dasar lokal dari deret (jendela ±2 jam).
+  // Plateau (nilai sama beberapa sampel karena pembulatan 2 desimal) diambil titik tengahnya.
+  function detectExtremes(s){
+    var T=s.T, V=s.V, n=V.length, w=12, flag=[], out=[], i, k;
+    for(i=0;i<n;i++){
+      if(i<w || i>n-1-w){ flag.push(0); continue; }
+      var mx=-Infinity, mn=Infinity;
+      for(k=i-w;k<=i+w;k++){ if(V[k]>mx) mx=V[k]; if(V[k]<mn) mn=V[k]; }
+      flag.push(mx>mn ? (V[i]===mx ? 1 : (V[i]===mn ? -1 : 0)) : 0);
+    }
+    i=0;
+    while(i<n){
+      if(flag[i]!==0){
+        var j=i;
+        while(j+1<n && flag[j+1]===flag[i]) j++;
+        var m=Math.round((i+j)/2);
+        out.push({ t:T[m], h:V[m], ty: flag[i]>0 ? "H" : "L" });
+        i=j+1;
+      } else i++;
+    }
+    return out;
+  }
+  function nextOf(type,t){
+    for(var i=0;i<S.P.length;i++){ if(S.P[i].ty===type && S.P[i].t>t) return S.P[i]; }
+    return null;
+  }
+  function nowRef(){ return S.demo ? S.demoBase+(Date.now()-S.loadedAt) : Date.now(); }
+
+  function computeOver(){
+    var out=[], cur=null, step=5*60000;
+    for(var t=S.dStart; t<=S.dEnd; t+=step){
+      var hi=levelAt(t)>=S.thr;
+      if(hi && !cur) cur={a:t,b:t};
+      else if(hi && cur) cur.b=t;
+      else if(!hi && cur){ out.push(cur); cur=null; }
+    }
+    if(cur) out.push(cur);
+    S.over=out;
+  }
+
+  /* ---------- PEMUATAN DATA ---------- */
+  function fetchJson(url){
+    var ctl = (typeof AbortController!=="undefined") ? new AbortController() : null;
+    var to = ctl ? setTimeout(function(){ ctl.abort(); }, FETCH_TIMEOUT_MS) : null;
+    return fetch(url, ctl?{signal:ctl.signal}:undefined).then(function(res){
+      if(to) clearTimeout(to);
+      if(!res.ok) throw new Error("HTTP "+res.status);
+      return res.json();
+    }, function(e){ if(to) clearTimeout(to); throw e; });
+  }
+
+  // Coba beberapa URL berurutan; "validate" melempar error bila format tidak sesuai.
+  function tryFetch(tries, validate){
+    var gagal=[];
+    function next(i){
+      if(i>=tries.length) return Promise.reject(new Error(gagal.join(" | ")));
+      var p;
+      try { p=fetchJson(tries[i][1]); } catch(e){ p=Promise.reject(e); }   // fetch tidak ada / diblokir
+      return p.then(function(json){
+        return { label:tries[i][0], json:json, parsed:validate(json,i) };
+      }).catch(function(e){
+        gagal.push(tries[i][0]+": "+(e && e.message ? e.message : e));
+        return next(i+1);
+      });
+    }
+    return next(0);
+  }
+
+  function loadData(){
+    var seq=++S.loadSeq;
+    setChip("", "Memuat data BMKG…");
+    var now=Date.now();
+    var dari=ymd(new Date(now-DAY)), sampai=ymd(new Date(now+3*DAY));
+    var q="&dari="+dari+"&sampai="+sampai;
+    var hlTries=[], seriTries=[];
+    if(URL_GAS){
+      hlTries.push(["via Apps Script", URL_GAS+"?aksi=pasut"+q]);
+      seriTries.push(["via Apps Script", URL_GAS+"?aksi=pasut_seri"+q]);
+    }
+    hlTries.push(["BMKG langsung", "https://maritim.bmkg.go.id/pasut/hltide/"+DATUM+"/UTC/"+ID_STASIUN+"/"+dari+"/"+sampai]);
+    seriTries.push(["BMKG langsung", "https://maritim.bmkg.go.id/pasut/data/UTC/"+ID_STASIUN+"/"+dari+"/"+sampai]);
+
+    var errs=[];
+    var pHL=tryFetch(hlTries,function(json,i){
+      var P=parseHL(json);
+      if(P.length<4) throw new Error(i===0&&URL_GAS ? "format tidak dikenali (Apps Script belum punya ?aksi=pasut?)" : "format tidak dikenali");
+      return P;
+    }).catch(function(e){ errs.push("titik H/L → "+e.message); return null; });
+    var pSeri=tryFetch(seriTries,function(json,i){
+      var se=parseSeri(json);
+      if(se.T.length<24) throw new Error(i===0&&URL_GAS ? "format tidak dikenali (Apps Script belum punya ?aksi=pasut_seri?)" : "format tidak dikenali");
+      return se;
+    }).catch(function(e){ errs.push("deret waktu → "+e.message); return null; });
+
+    Promise.all([pHL,pSeri]).then(function(r){
+      if(seq!==S.loadSeq) return;
+      var hl=r[0], se=r[1];
+      if(!hl && !se){ apply({ P:parseHL(DEMO), demo:true, note:errs.join(" | ") }); return; }
+      apply({
+        P: hl?hl.parsed:null, hlJson: hl?hl.json:null, hlLabel: hl?hl.label:"",
+        seri: se?se.parsed:null, seriJson: se?se.json:null, seriLabel: se?se.label:"",
+        demo:false, note:errs.join(" | ")
+      });
+    });
+  }
+
+  function apply(o){
+    var seri=o.seri||null, P=o.P||[];
+    if(P.length<2 && seri) P=detectExtremes(seri);
+    S.seri=seri; S.P=P; S.demo=!!o.demo; S.loadedAt=Date.now();
+    S.curve=seri?"seri":"kosinus";
+    S.dStart=seri?seri.T[0]:P[0].t;
+    S.dEnd=seri?seri.T[seri.T.length-1]:P[P.length-1].t;
+    S.demoBase=S.dStart+20*HR;
+    S.thr=DEF.thr; S.mid=DEF.mid; S.midName="tengah pasut";
+    [o.hlJson,o.seriJson].forEach(function(j){
+      if(!j || typeof j!=="object") return;
+      if(typeof j.ambang_pasang_darurat_m==="number") S.thr=j.ambang_pasang_darurat_m;
+      if(typeof j.tide_mid_lat_m==="number") S.mid=j.tide_mid_lat_m;
+    });
+    if(o.seriJson && typeof o.seriJson.msl_lat_m==="number"){ S.mid=o.seriJson.msl_lat_m; S.midName="MSL"; }
+
+    var hmax=-Infinity, lmin=Infinity;
+    var vals=seri ? seri.V : P.map(function(p){ return p.h; });
+    vals.forEach(function(v){ if(v>hmax) hmax=v; if(v<lmin) lmin=v; });
+    S.yMax=Math.max(3, Math.ceil((hmax+0.2)*2)/2);
+    computeOver();
+    S.mode="live"; S.playing=false; S.t=nowRef();
+    syncPlayBtn();
+
+    var w=$("pv-warn");
+    if(lmin < -0.05){
+      w.style.display="block";
+      w.textContent="Peringatan: ada nilai surut negatif ("+lmin.toFixed(2)+" m). Pada datum LAT nilai surut tidak negatif, jadi data ini kemungkinan bukan datum LAT.";
+    } else { w.style.display="none"; }
+
+    var labels=[];
+    [o.hlLabel,o.seriLabel].forEach(function(l){ if(l && labels.indexOf(l)<0) labels.push(l); });
+    if(o.demo){
+      setChip("demo","DEMO · data contoh 10-13 Okt 2026");
+    } else {
+      setChip("live","LIVE · BMKG "+DATUM+" · "+(seri?"deret 10 menit":"interpolasi kosinus")+" · "+labels.join(" + ")+" · dimuat "+fmtHM(Date.now())+" "+zoneName());
+    }
+    $("pv-thrv").textContent=S.thr.toFixed(2);
+    $("pv-gthr").textContent=S.thr.toFixed(2);
+
+    var txt;
+    if(o.demo){
+      txt="Memakai data contoh (titik pasang/surut 10-13 Okt 2026; kurva = interpolasi kosinus) karena pengambilan langsung gagal"+(o.note?" ("+o.note+")":"")+". ";
+    } else {
+      txt="Sumber data: "+labels.join(" + ")+". ";
+      if(seri){
+        txt+="Kurva: deret waktu 10 menit dari BMKG Maritim (stasiun Bajoe, kolom lt = datum LAT). "+
+             (o.P && o.P.length>=2 ? "Titik pasang/surut: endpoint hltide. " : "Titik pasang/surut dideteksi dari deret (endpoint hltide tidak terjangkau). ");
+      } else {
+        txt+="Titik pasang/surut dari BMKG Maritim (stasiun Bajoe, datum LAT). Kurva di antara titik adalah interpolasi kosinus (aproksimasi; pada uji 10-13 Okt 2026 galatnya RMS ≈ 2 cm, maks ≈ 6 cm terhadap kurva BMKG), bukan deret waktu BMKG. ";
+      }
+      if(o.note) txt+="Catatan: "+o.note+". ";
+    }
+    txt+="Ambang darurat "+S.thr.toFixed(2)+" m bersifat tentatif dan mengikuti pengaturan dashboard.";
+    $("pv-src").textContent=txt;
+
+    buildGauge();
+    renderChart();
+    renderOver();
+    draw();
+  }
+
+  function setChip(cls,text){ var c=$("pv-chip"); c.className="pv-chip"+(cls?" "+cls:""); c.textContent=text; }
+
+  /* ---------- ALAT UKUR (gauge) ---------- */
+  var G={x:64,w:150,top:30,h:300};
+  function gy(h){ return G.top+G.h-(Math.min(Math.max(h,0),S.yMax)/S.yMax)*G.h; }
+  function wavePath(amp,wl,x0,x1){
+    var d="M"+x0+",0";
+    for(var x=x0;x<=x1;x+=4) d+=" L"+x+","+(amp*Math.sin((x-x0)/wl*2*Math.PI)).toFixed(2);
+    return d+" L"+x1+",420 L"+x0+",420 Z";
+  }
+  function buildGauge(){
+    var s='<svg viewBox="0 0 220 360" role="img" aria-label="Alat ukur tinggi muka air">';
+    s+='<defs><linearGradient id="pv-water" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#38bdf8"/><stop offset="1" stop-color="#0369a1"/></linearGradient>'+
+       '<clipPath id="pv-gclip"><rect x="'+G.x+'" y="'+G.top+'" width="'+G.w+'" height="'+G.h+'" rx="4"/></clipPath></defs>';
+    s+='<rect x="'+G.x+'" y="'+G.top+'" width="'+G.w+'" height="'+G.h+'" rx="4" fill="#f1f5f9" stroke="#cbd5e1"/>';
+    s+='<g clip-path="url(#pv-gclip)"><g id="pv-wlevel" style="transform:translateY('+gy(0)+'px)">'+
+       '<g class="pv-w1"><path d="'+wavePath(3,75,G.x,G.x+G.w+150)+'" fill="#7dd3fc" opacity=".6"/></g>'+
+       '<g class="pv-w2"><path d="'+wavePath(4,100,G.x,G.x+G.w+200)+'" fill="url(#pv-water)"/></g>'+
+       '</g></g>';
+    for(var v=0; v<=S.yMax+1e-9; v+=0.5){
+      var yy=gy(v);
+      s+='<line x1="46" x2="'+G.x+'" y1="'+yy+'" y2="'+yy+'" stroke="#94a3b8"/>'+
+         '<text x="40" y="'+(yy+4)+'" text-anchor="end" font-size="11" fill="#64748b" font-family="ui-monospace,monospace">'+v.toFixed(1)+'</text>';
+    }
+    var yT=gy(S.thr), yM=gy(S.mid);
+    s+='<line x1="'+G.x+'" x2="'+(G.x+G.w)+'" y1="'+yM+'" y2="'+yM+'" stroke="#fff" stroke-width="1.6" stroke-dasharray="2 4" stroke-linecap="round"/>';
+    s+='<line x1="'+G.x+'" x2="'+(G.x+G.w)+'" y1="'+yT+'" y2="'+yT+'" stroke="#fff" stroke-width="4" opacity=".7"/>'+
+       '<line x1="'+G.x+'" x2="'+(G.x+G.w)+'" y1="'+yT+'" y2="'+yT+'" stroke="#dc2626" stroke-width="2" stroke-dasharray="5 4"/>';
+    s+='<g id="pv-gptr" style="transform:translateY('+gy(0)+'px)"><path d="M'+G.x+',0 L'+(G.x-13)+',-7 L'+(G.x-13)+',7 Z" fill="#0f172a"/></g>';
+    s+='</svg>';
+    $("pv-gauge-box").innerHTML=s;
+  }
+
+  /* ---------- GRAFIK ---------- */
+  function domain(){
+    var nr=nowRef(), a=S.dStart, b=S.dEnd;
+    if(S.view==="48"){ a=nr-6*HR; b=nr+42*HR; }
+    else if(S.view==="24"){ a=nr-3*HR; b=nr+21*HR; }
+    if(a<S.dStart){ b+=S.dStart-a; a=S.dStart; }
+    if(b>S.dEnd){ a-=b-S.dEnd; b=S.dEnd; }
+    return [Math.max(a,S.dStart), Math.min(b,S.dEnd)];
+  }
+
+  function renderChart(){
+    if(!S.P.length) return;
+    var box=$("pv-chart");
+    var W=Math.max(300, box.clientWidth||600), H=W<520?300:360;
+    var m={l:42,r:14,t:34,b:34}, pw=W-m.l-m.r, ph=H-m.t-m.b;
+    var dm=domain(), d0=dm[0], d1=dm[1];
+    function x(t){ return m.l+(t-d0)/(d1-d0)*pw; }
+    function y(h){ return m.t+ph-(Math.min(Math.max(h,0),S.yMax)/S.yMax)*ph; }
+    S.L={W:W,H:H,m:m,pw:pw,ph:ph,d0:d0,d1:d1,x:x,y:y};
+
+    var step=Math.max(5*60000,(d1-d0)/600), pts=[];
+    for(var t=d0;t<=d1;t+=step) pts.push([x(t),y(levelAt(t))]);
+    pts.push([x(d1),y(levelAt(d1))]);
+    var line=pts.map(function(p,i){ return (i?"L":"M")+p[0].toFixed(1)+","+p[1].toFixed(1); }).join(" ");
+    var area=line+" L"+x(d1).toFixed(1)+","+y(0).toFixed(1)+" L"+x(d0).toFixed(1)+","+y(0).toFixed(1)+" Z";
+    var yT=y(S.thr), yM=y(S.mid);
+
+    var g='<svg viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg" font-family="Inter,system-ui,sans-serif">';
+    g+='<defs><linearGradient id="pv-area" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0284c7" stop-opacity=".38"/><stop offset="1" stop-color="#0284c7" stop-opacity=".05"/></linearGradient>'+
+       '<clipPath id="pv-cp-over"><rect x="'+m.l+'" y="'+m.t+'" width="'+pw+'" height="'+Math.max(0,yT-m.t)+'"/></clipPath></defs>';
+
+    // grid horizontal + sumbu y
+    for(var v=0; v<=S.yMax+1e-9; v+=0.5){
+      var yy=y(v);
+      g+='<line x1="'+m.l+'" x2="'+(m.l+pw)+'" y1="'+yy+'" y2="'+yy+'" stroke="#e2e8f0"/>'+
+         '<text x="'+(m.l-6)+'" y="'+(yy+4)+'" text-anchor="end" font-size="11" fill="#64748b" font-family="ui-monospace,monospace">'+v.toFixed(1)+'</text>';
+    }
+    g+='<text x="12" y="'+(m.t+ph/2)+'" transform="rotate(-90 12 '+(m.t+ph/2)+')" text-anchor="middle" font-size="11" fill="#64748b">Tinggi muka air (m, LAT)</text>';
+
+    // garis hari + tanda jam
+    var off=S.off*HR, k0=Math.floor((d0+off)/DAY)*DAY-off, small=W<520;
+    for(var td=k0; td<=d1; td+=DAY){
+      if(td>=d0) g+='<line x1="'+x(td)+'" x2="'+x(td)+'" y1="'+m.t+'" y2="'+(m.t+ph)+'" stroke="#cbd5e1" stroke-dasharray="3 3"/>';
+      var xa=x(Math.max(td,d0)), xb=x(Math.min(td+DAY,d1));
+      if(xb-xa>70) g+='<text x="'+(xa+6)+'" y="'+(m.t-12)+'" font-size="11" font-weight="600" fill="#334155">'+fmtDay(td)+'</text>';
+      for(var hh=0; hh<24; hh+=6){
+        var th=td+hh*HR;
+        if(th<d0||th>d1) continue;
+        g+='<text x="'+x(th)+'" y="'+(m.t+ph+16)+'" text-anchor="middle" font-size="10.5" fill="#64748b" font-family="ui-monospace,monospace">'+pad(hh)+(small?"":":00")+'</text>';
+      }
+    }
+
+    // kurva
+    g+='<path d="'+area+'" fill="url(#pv-area)"/>';
+    g+='<path d="'+line+'" fill="none" stroke="#0284c7" stroke-width="2.4" stroke-linejoin="round"/>';
+    g+='<g clip-path="url(#pv-cp-over)"><path d="'+area+'" fill="#ef4444" opacity=".28"/><path d="'+line+'" fill="none" stroke="#dc2626" stroke-width="3" stroke-linejoin="round"/></g>';
+
+    // ambang & tengah pasut
+    g+='<line x1="'+m.l+'" x2="'+(m.l+pw)+'" y1="'+yM+'" y2="'+yM+'" stroke="#94a3b8" stroke-dasharray="1 4" stroke-linecap="round"/>'+
+       '<text x="'+(m.l+4)+'" y="'+(yM-4)+'" font-size="10" fill="#94a3b8">'+S.midName+' '+S.mid.toFixed(2)+'</text>';
+    g+='<line x1="'+m.l+'" x2="'+(m.l+pw)+'" y1="'+yT+'" y2="'+yT+'" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="6 4"/>'+
+       '<text x="'+(m.l+pw-4)+'" y="'+(yT-5)+'" text-anchor="end" font-size="10.5" font-weight="600" fill="#dc2626">ambang '+S.thr.toFixed(2)+' m</text>';
+
+    // titik pasang/surut
+    S.P.forEach(function(p){
+      if(p.t<d0||p.t>d1) return;
+      var cx=x(p.t), cy=y(p.h), hi=p.ty==="H";
+      g+='<circle cx="'+cx.toFixed(1)+'" cy="'+cy.toFixed(1)+'" r="4.5" fill="'+(hi?"#ef4444":"#16a34a")+'" stroke="#fff" stroke-width="1.5"/>';
+      var lab=p.h.toFixed(2)+(W>=700?" · "+fmtHM(p.t):"");
+      g+='<text x="'+cx.toFixed(1)+'" y="'+(hi?cy-9:cy+17).toFixed(1)+'" text-anchor="middle" font-size="10.5" font-weight="600" fill="'+(hi?"#b91c1c":"#15803d")+'" font-family="ui-monospace,monospace">'+lab+'</text>';
+    });
+
+    // kursor waktu + hover
+    g+='<g id="pv-hov" pointer-events="none" visibility="hidden"><line y1="'+m.t+'" y2="'+(m.t+ph)+'" stroke="#64748b" stroke-dasharray="3 3"/>'+
+       '<g><rect rx="5" height="20" fill="#0f172a" opacity=".88"/><text font-size="11" fill="#fff" font-family="ui-monospace,monospace"></text></g></g>';
+    g+='<g id="pv-cur" pointer-events="none" visibility="hidden"><line stroke="#ea580c" stroke-width="2" stroke-dasharray="5 3"/>'+
+       '<circle r="6.5" fill="#fff" stroke="#ea580c" stroke-width="3"/>'+
+       '<g><rect rx="5" height="20" fill="#ea580c"/><text font-size="11" font-weight="600" fill="#fff" font-family="ui-monospace,monospace"></text></g></g>';
+    g+='<rect id="pv-ov" x="'+m.l+'" y="'+m.t+'" width="'+pw+'" height="'+ph+'" fill="transparent" style="cursor:crosshair;touch-action:pan-y"/>';
+    g+='</svg>';
+    box.innerHTML=g;
+    box.setAttribute("aria-label","Grafik pasang surut Bajoe, "+fmtDay(d0)+" sampai "+fmtDay(d1)+", datum LAT");
+    bindChart();
+  }
+
+  function bindChart(){
+    var ov=$("pv-ov"), drag=false;
+    function tFrom(ev){
+      var r=ov.getBoundingClientRect(), f=(ev.clientX-r.left)/r.width;
+      return S.L.d0+Math.min(1,Math.max(0,f))*(S.L.d1-S.L.d0);
+    }
+    ov.addEventListener("pointerdown",function(ev){
+      drag=true;
+      try{ ov.setPointerCapture(ev.pointerId); }catch(e){}
+      setManual(tFrom(ev));
+    });
+    ov.addEventListener("pointermove",function(ev){
+      var t=tFrom(ev);
+      if(drag) setManual(t);
+      else if(ev.pointerType==="mouse") showHover(t);
+    });
+    function end(){ drag=false; }
+    ov.addEventListener("pointerup",end);
+    ov.addEventListener("pointercancel",end);
+    ov.addEventListener("pointerleave",function(){ var h=$("pv-hov"); if(h) h.setAttribute("visibility","hidden"); });
+  }
+
+  function chipBox(grp, cx, text){
+    var L=S.L, w=text.length*6.6+14;
+    var rx=Math.min(Math.max(cx-w/2, L.m.l), L.W-L.m.r-w);
+    var rect=grp.querySelector("rect"), txt=grp.querySelector("text");
+    rect.setAttribute("x",rx); rect.setAttribute("y",L.m.t+3); rect.setAttribute("width",w);
+    txt.setAttribute("x",rx+7); txt.setAttribute("y",L.m.t+17); txt.textContent=text;
+  }
+  function showHover(t){
+    var L=S.L, hv=$("pv-hov"); if(!L||!hv) return;
+    var cx=L.x(t), ln=hv.querySelector("line");
+    ln.setAttribute("x1",cx); ln.setAttribute("x2",cx);
+    chipBox(hv.querySelector("g"), cx, fmtHM(t)+" · "+levelAt(t).toFixed(2)+" m");
+    hv.setAttribute("visibility","visible");
+  }
+  function updateCursor(){
+    var L=S.L, cur=$("pv-cur"); if(!L||!cur) return;
+    var t=S.t;
+    if(t<L.d0||t>L.d1){ cur.setAttribute("visibility","hidden"); return; }
+    var cx=L.x(t), h=levelAt(t), cy=L.y(h);
+    var ln=cur.querySelector("line"), c=cur.querySelector("circle");
+    ln.setAttribute("x1",cx); ln.setAttribute("x2",cx); ln.setAttribute("y1",L.m.t); ln.setAttribute("y2",L.m.t+L.ph);
+    c.setAttribute("cx",cx); c.setAttribute("cy",cy);
+    var pre=S.mode==="live"?(S.demo?"Demo · ":"Sekarang · "):"";
+    chipBox(cur.querySelector("g"), cx, pre+fmtHM(t)+" · "+h.toFixed(2)+" m");
+    cur.setAttribute("visibility","visible");
+  }
+
+  /* ---------- PEMBARUAN TAMPILAN ---------- */
+  function updateGauge(){
+    var y=gy(levelAt(S.t)), w=$("pv-wlevel"), p=$("pv-gptr");
+    if(w) w.style.transform="translateY("+y.toFixed(1)+"px)";
+    if(p) p.style.transform="translateY("+y.toFixed(1)+"px)";
+  }
+
+  function nextCard(type,idA,idB,t){
+    var p=nextOf(type,t);
+    if(!p){ $(idA).textContent="–"; $(idB).textContent="di luar rentang data"; return; }
+    $(idA).textContent=p.h.toFixed(2)+" m";
+    $(idB).textContent=fmtHM(p.t)+" "+zoneName()+" ("+dayRel(p.t,t)+") · dalam "+fmtDur(p.t-t);
+  }
+
+  function updateReadout(){
+    if(!S.P.length) return;
+    var t=S.t, h=levelAt(t);
+    $("pv-level").textContent=h.toFixed(2);
+
+    var rate=(levelAt(t+5*60000)-levelAt(t-5*60000))/(10/60), tr=$("pv-trend");
+    if(Math.abs(rate)<0.02){ tr.textContent="■ Hampir diam (puncak/dasar)"; tr.className="pv-trend flat"; }
+    else if(rate>0){ tr.textContent="▲ Naik "+rate.toFixed(2)+" m/jam"; tr.className="pv-trend up"; }
+    else { tr.textContent="▼ Surut "+Math.abs(rate).toFixed(2)+" m/jam"; tr.className="pv-trend down"; }
+
+    var lab = S.mode==="live" ? (S.demo?"Waktu demo":"Sekarang") : (S.mode==="play"?"Animasi":"Waktu dipilih");
+    $("pv-clock").textContent=lab+" · "+fmtDay(t)+" "+fmtHM(t)+" "+zoneName();
+
+    nextCard("H","pv-nh","pv-nh2",t);
+    nextCard("L","pv-nl","pv-nl2",t);
+
+    var win=S.P.filter(function(p){ return p.t>=t && p.t<=t+24*HR; });
+    if(win.length>=2){
+      var hi=-Infinity, lo=Infinity;
+      win.forEach(function(p){ if(p.h>hi) hi=p.h; if(p.h<lo) lo=p.h; });
+      $("pv-rng").textContent=(hi-lo).toFixed(2)+" m";
+      $("pv-rng2").textContent="surut "+lo.toFixed(2)+" → pasang "+hi.toFixed(2)+" m (24 jam dari waktu terpilih)";
+    } else { $("pv-rng").textContent="–"; $("pv-rng2").textContent="data tidak cukup"; }
+
+    var inside=null, nxt=null;
+    for(var i=0;i<S.over.length;i++){
+      var o=S.over[i];
+      if(t>=o.a && t<=o.b){ inside=o; break; }
+      if(o.a>t){ nxt=o; break; }
+    }
+    var card=$("pv-thrcard");
+    if(inside){
+      $("pv-thr").textContent="DI ATAS";
+      $("pv-thr2").textContent="sampai ±"+fmtHM(inside.b)+" "+zoneName()+" ("+dayRel(inside.b,t)+")";
+      card.className="pv-card warn";
+    } else {
+      $("pv-thr").textContent="di bawah";
+      $("pv-thr2").textContent = nxt
+        ? "berikut ±"+fmtHM(nxt.a)+"–"+fmtHM(nxt.b)+" "+zoneName()+" ("+dayRel(nxt.a,t)+", dalam "+fmtDur(nxt.a-t)+")"
+        : "tidak ada jendela di atas ambang pada data berikutnya";
+      card.className="pv-card";
+    }
+  }
+
+  function renderOver(){
+    $("pv-tzlab").textContent="("+zoneName()+")";
+    var ul=$("pv-over");
+    if(!S.over.length){ ul.innerHTML="<li>Tidak ada pada rentang data ini.</li>"; return; }
+    ul.innerHTML=S.over.map(function(o){
+      var mnt=Math.round((o.b-o.a)/60000)+5;
+      return "<li>"+fmtDay(o.a)+" · "+fmtHM(o.a)+"–"+fmtHM(o.b)+" (±"+mnt+" mnt)</li>";
+    }).join("");
+  }
+
+  function draw(){ updateCursor(); updateGauge(); updateReadout(); }
+
+  /* ---------- KONTROL & ANIMASI ---------- */
+  function syncPlayBtn(){ $("pv-play").textContent=S.playing?"⏸ Jeda":"▶ Putar animasi"; }
+  function setManual(t){ S.mode="manual"; S.playing=false; S.t=t; syncPlayBtn(); draw(); }
+
+  $("pv-play").addEventListener("click",function(){
+    if(!S.P.length) return;
+    if(S.playing){ S.playing=false; S.mode="manual"; }
+    else {
+      if(S.view!=="all"){ S.view="all"; $("pv-view").value="all"; renderChart(); }
+      S.playing=true; S.mode="play";
+      if(S.t>=S.dEnd-HR || S.t<S.dStart) S.t=S.dStart;
+    }
+    syncPlayBtn(); draw();
+  });
+  $("pv-now").addEventListener("click",function(){ S.mode="live"; S.playing=false; S.t=nowRef(); syncPlayBtn(); draw(); });
+  $("pv-speed").addEventListener("change",function(){ S.speed=parseFloat(this.value)||3; });
+  $("pv-view").addEventListener("change",function(){ S.view=this.value; renderChart(); draw(); });
+  $("pv-tz").addEventListener("change",function(){ S.off=parseInt(this.value,10)||0; renderChart(); renderOver(); draw(); });
+  $("pv-reload").addEventListener("click",loadData);
+
+  var lastTs=0, lastLive=0;
+  function loop(ts){
+    var dt=lastTs?(ts-lastTs)/1000:0; lastTs=ts;
+    if(S.P.length){
+      if(S.mode==="play"){
+        S.t+=dt*S.speed*HR;
+        if(S.t>S.dEnd) S.t=S.dStart;
+        draw();
+      } else if(S.mode==="live" && ts-lastLive>1000){
+        S.t=nowRef(); lastLive=ts; draw();
+      }
+    }
+    requestAnimationFrame(loop);
+  }
+
+  var rz=null;
+  window.addEventListener("resize",function(){
+    if(rz) cancelAnimationFrame(rz);
+    rz=requestAnimationFrame(function(){ renderChart(); draw(); });
+  });
+
+  loadData();
+  requestAnimationFrame(loop);
 })();
 </script>
 </body>
