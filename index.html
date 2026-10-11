@@ -1619,9 +1619,10 @@
     var faseBulan = hitungFaseBulanVisual(t);
     var elMoon = $("pv-moon");
     if(elMoon) {
-      elMoon.textContent = faseBulan.ikon + " " + faseBulan.label;
-      elMoon.style.color = faseBulan.warna;
-    }
+  // Menggunakan innerHTML agar bisa menyisipkan tag <span> untuk ikon
+  elMoon.innerHTML = '<span style="font-size: 28px; vertical-align: middle; margin-right: 4px;">' + faseBulan.ikon + '</span>' + faseBulan.label;
+  elMoon.style.color = faseBulan.warna;
+}
 
     nextCard("H","pv-nh","pv-nh2",t);
     nextCard("L","pv-nl","pv-nl2",t);
