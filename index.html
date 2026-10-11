@@ -299,7 +299,7 @@
 
       <!-- VISUALISASI PASANG SURUT (BMKG, stasiun Bajoe) -->
       <section class="panel" id="pasut-viz">
-        <div class="panel-head"><h2>Visualisasi Pasang Surut — Muara Walanae (Stasiun Bajoe)</h2></div>
+        <div class="panel-head"><h2>Visualisasi Pasang Surut — Muara Walanae (Stasiun Bone)</h2></div>
         <div class="panel-body">
 
           <div class="pv-bar">
@@ -1311,8 +1311,8 @@
     var q="&dari="+dari+"&sampai="+sampai;
     var hlTries=[], seriTries=[];
     if(URL_GAS){
-      hlTries.push(["via Apps Script", URL_GAS+"?aksi=pasut"+q]);
-      seriTries.push(["via Apps Script", URL_GAS+"?aksi=pasut_seri"+q]);
+      hlTries.push(["Sumber BMKG Maritim", URL_GAS+"?aksi=pasut"+q]);
+      seriTries.push(["Sumber BMKG Maritim", URL_GAS+"?aksi=pasut_seri"+q]);
     }
     hlTries.push(["BMKG langsung", "https://maritim.bmkg.go.id/pasut/hltide/"+DATUM+"/UTC/"+ID_STASIUN+"/"+dari+"/"+sampai]);
     seriTries.push(["BMKG langsung", "https://maritim.bmkg.go.id/pasut/data/UTC/"+ID_STASIUN+"/"+dari+"/"+sampai]);
@@ -1376,7 +1376,7 @@
     if(o.demo){
       setChip("demo","DEMO · data contoh 10-13 Okt 2026");
     } else {
-      setChip("live","LIVE · BMKG "+DATUM+" · "+(seri?"deret 10 menit":"interpolasi kosinus")+" · "+labels.join(" + ")+" · dimuat "+fmtHM(Date.now())+" "+zoneName());
+      setChip("live","REALTIME · BMKG "+DATUM+" · "+(seri?"deret 10 menit":"interpolasi kosinus")+" · "+labels.join(" + ")+" · dimuat "+fmtHM(Date.now())+" "+zoneName());
     }
     $("pv-thrv").textContent=S.thr.toFixed(2);
     $("pv-gthr").textContent=S.thr.toFixed(2);
