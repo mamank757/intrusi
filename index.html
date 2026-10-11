@@ -331,6 +331,7 @@
               <p class="pv-level"><span id="pv-level">–</span><small>m (LAT)</small></p>
               <div class="pv-trend flat" id="pv-trend">–</div>
               <p class="pv-clock" id="pv-clock">–</p>
+              <div id="pv-moon" style="text-align:center; font-size:13px; font-weight:600; color:#334155; margin-bottom:12px;">🌑 Menghitung fase...</div>
               <div id="pv-gauge-box"></div>
               <p class="pv-gleg"><span class="pv-dash"></span>ambang darurat pasang <b id="pv-gthr">2.27</b> m &nbsp;·&nbsp; garis putih titik: tengah pasut (MSL)</p>
             </div>
@@ -1175,6 +1176,30 @@
   }
   function ymd(d){ return d.getUTCFullYear()+pad(d.getUTCMonth()+1)+pad(d.getUTCDate()); }
 
+  // FUNGSI HITUNG FASE BULAN VISUAL
+  function hitungFaseBulanVisual(tMs) {
+    // Siklus sinodik bulan: 29.530588 hari
+    var SIKLUS = 29.530588 * 86400000;
+    // Referensi bulan baru (New Moon): 6 Jan 2000 18:14 UTC
+    var BASE_NEW_MOON = Date.UTC(2000, 0, 6, 18, 14);
+    
+    var umur = (tMs - BASE_NEW_MOON) % SIKLUS;
+    if (umur < 0) umur += SIKLUS;
+    var rasio = umur / SIKLUS; // 0.0 hingga 1.0
+
+    var ikon, label, warna;
+    if (rasio < 0.03 || rasio > 0.97) { ikon = "🌑"; label = "Bulan Baru (Pasang Besar)"; warna = "#1e293b"; }
+    else if (rasio < 0.22) { ikon = "🌒"; label = "Bulan Sabit Awal"; warna = "#475569"; }
+    else if (rasio < 0.28) { ikon = "🌓"; label = "Perempat Pertama (Pasang Kecil)"; warna = "#0369a1"; }
+    else if (rasio < 0.47) { ikon = "🌔"; label = "Bulan Cembung Awal"; warna = "#475569"; }
+    else if (rasio < 0.53) { ikon = "🌕"; label = "Purnama (Pasang Besar)"; warna = "#b45309"; }
+    else if (rasio < 0.72) { ikon = "🌖"; label = "Bulan Cembung Akhir"; warna = "#475569"; }
+    else if (rasio < 0.78) { ikon = "🌗"; label = "Perempat Akhir (Pasang Kecil)"; warna = "#0369a1"; }
+    else { ikon = "🌘"; label = "Bulan Sabit Akhir"; warna = "#475569"; }
+
+    return { ikon: ikon, label: label, warna: warna };
+  }
+
   /* ---------- DATA: parsing & interpolasi ---------- */
   function parseT(s){
     var t=Date.parse(s);
@@ -1194,8 +1219,6 @@
     return out;
   }
   // Tinggi muka air pada waktu t.
-  // - Ada deret waktu BMKG 10 menit (S.seri): interpolasi linier antar sampel (data asli).
-  // - Tidak ada: interpolasi kosinus antara titik pasang/surut berurutan (aproksimasi).
   function levelAt(t){
     var s=S.seri;
     if(s){
@@ -1216,8 +1239,6 @@
     return p0.h+(p1.h-p0.h)*(1-Math.cos(Math.PI*f))/2;
   }
 
-  // Deret waktu BMKG: [{"t":"2026-10-11T00:00+00:00","lt":"0.74","msl":"-0.81",...}, ...]
-  // (kolom "lt" = LAT; nilai berupa string) ATAU bentuk ringkas dari Apps Script {t:[...], lt:[...]}.
   function parseSeri(j){
     var T=[], V=[], i, t, v;
     if(Array.isArray(j)){
@@ -1235,8 +1256,6 @@
     return { T: idx.map(function(k){ return T[k]; }), V: idx.map(function(k){ return V[k]; }) };
   }
 
-  // Cadangan bila titik H/L tidak tersedia: cari puncak/dasar lokal dari deret (jendela ±2 jam).
-  // Plateau (nilai sama beberapa sampel karena pembulatan 2 desimal) diambil titik tengahnya.
   function detectExtremes(s){
     var T=s.T, V=s.V, n=V.length, w=12, flag=[], out=[], i, k;
     for(i=0;i<n;i++){
@@ -1286,13 +1305,12 @@
     }, function(e){ if(to) clearTimeout(to); throw e; });
   }
 
-  // Coba beberapa URL berurutan; "validate" melempar error bila format tidak sesuai.
   function tryFetch(tries, validate){
     var gagal=[];
     function next(i){
       if(i>=tries.length) return Promise.reject(new Error(gagal.join(" | ")));
       var p;
-      try { p=fetchJson(tries[i][1]); } catch(e){ p=Promise.reject(e); }   // fetch tidak ada / diblokir
+      try { p=fetchJson(tries[i][1]); } catch(e){ p=Promise.reject(e); }   
       return p.then(function(json){
         return { label:tries[i][0], json:json, parsed:validate(json,i) };
       }).catch(function(e){
@@ -1596,6 +1614,14 @@
 
     var lab = S.mode==="live" ? (S.demo?"Waktu demo":"Sekarang") : (S.mode==="play"?"Animasi":"Waktu dipilih");
     $("pv-clock").textContent=lab+" · "+fmtDay(t)+" "+fmtHM(t)+" "+zoneName();
+
+    // UPDATE FASE BULAN
+    var faseBulan = hitungFaseBulanVisual(t);
+    var elMoon = $("pv-moon");
+    if(elMoon) {
+      elMoon.textContent = faseBulan.ikon + " " + faseBulan.label;
+      elMoon.style.color = faseBulan.warna;
+    }
 
     nextCard("H","pv-nh","pv-nh2",t);
     nextCard("L","pv-nl","pv-nl2",t);
